@@ -37,7 +37,24 @@ function PdfSummarizer() {
           },
         }
       );
-      setSummary(response.data.summary); // Assuming backend forwards { "summary": "..." }
+      // The error "Objects are not valid as a React child (found: object with keys {input_documents, output_text})"
+      // implies that `response.data.summary` is this object. We need to extract `output_text`.
+      if (
+        response.data &&
+        response.data.summary &&
+        typeof response.data.summary.output_text === "string"
+      ) {
+        setSummary(response.data.summary.output_text);
+      } else if (response.data && typeof response.data.summary === "string") {
+        // Fallback if for some reason response.data.summary is already a string
+        setSummary(response.data.summary);
+      } else {
+        console.error("Unexpected summary structure from server:", response.data);
+        setError(
+          "Failed to parse summary from the server response. Expected 'response.data.summary.output_text' to be a string."
+        );
+        setSummary(""); // Clear summary or indicate an error
+      }
     } catch (err) {
       console.error("Error uploading or summarizing file:", err);
       let errorMessage = "Failed to summarize PDF. Please try again.";
