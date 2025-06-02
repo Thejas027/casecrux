@@ -1,5 +1,6 @@
 const axios = require("axios");
 const multer = require("multer");
+const FormData = require("form-data"); // Added
 
 // Configure multer for in-memory file storage
 const storage = multer.memoryStorage();
@@ -11,19 +12,22 @@ const summarizePdfController = async (req, res) => {
   }
 
   try {
-    // The ML service expects the raw file buffer
-    const mlServiceUrl = "http://localhost:8000/summarize"; // Ensure your Python service is running here
+    const mlServiceUrl = "https://casecrux.onrender.com/summarize";
 
-    const response = await axios.post(mlServiceUrl, req.file.buffer, {
+    // Create a new FormData instance
+    const formData = new FormData();
+    // Append the file buffer. The field name 'file' must match what FastAPI expects.
+    // We also pass the original filename, which can be useful for the server.
+    formData.append("file", req.file.buffer, {
+      filename: req.file.originalname,
+    });
+
+    const response = await axios.post(mlServiceUrl, formData, {
       headers: {
-        // The Python service's summarize_pdf function seems to expect the raw content,
-        // which implies 'application/octet-stream' or letting axios determine it.
-        // If it specifically needs 'application/pdf', uncomment the line below.
-        // 'Content-Type': 'application/pdf',
-        "Content-Type": req.file.mimetype, // Or more generically: 'application/octet-stream'
+        // Let FormData set the Content-Type header, including the boundary
+        ...formData.getHeaders(),
       },
-      // If the Python service expects a specific field name for the file, adjust accordingly.
-      // For FastAPI UploadFile, sending the buffer directly as data is usually correct.
+      timeout: 300000, // Added: 5 minutes timeout
     });
 
     res.json(response.data); // Assuming the ML service returns { "summary": "..." }
