@@ -86,7 +86,7 @@ const multiPdfSummarizeController = async (req, res) => {
     const allSummariesText = summaries
       .map(
         (s) =>
-          `PDF: ${s.pdfName}\n${
+          `PDF: ${s.pdfName}\n$${
             typeof s.summary === "string"
               ? s.summary
               : s.summary.output_text || JSON.stringify(s.summary)
@@ -94,6 +94,13 @@ const multiPdfSummarizeController = async (req, res) => {
       )
       .join("\n\n");
     const metaPrompt = `Given the following summaries of a legal case, write a final summary and list the pros and cons of the judgment.\n\n${allSummariesText}`;
+    // Prevent sending too-large prompts to the ML service
+    if (metaPrompt.length > 12000) {
+      return res.status(400).json({
+        error:
+          "Meta-summary prompt is too large. Please reduce the number or size of PDFs.",
+      });
+    }
     // Send metaPrompt to ML service as a text file
     const metaFormData = new FormData();
     metaFormData.append("file", Buffer.from(metaPrompt, "utf-8"), {
@@ -149,12 +156,10 @@ const multiPdfSummarizeController = async (req, res) => {
         details: error.response.data,
       });
     }
-    res
-      .status(500)
-      .json({
-        error: "Failed to summarize multiple PDFs.",
-        details: error.message,
-      });
+    res.status(500).json({
+      error: "Failed to summarize multiple PDFs.",
+      details: error.message,
+    });
   }
 };
 
