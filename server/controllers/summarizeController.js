@@ -60,12 +60,20 @@ const summarizePdfController = async (req, res) => {
   }
 };
 
-// GET /api/summaries - return all summaries
+// GET /api/summaries - return all summaries (unique by pdfName, latest wins)
 const getAllSummariesController = async (req, res) => {
   try {
-    const summaries = await Summary.find({}, { __v: 0 }).sort({
-      createdAt: 1,
-    });
+    // Get all summaries, sort by createdAt descending (latest first)
+    const all = await Summary.find({}, { __v: 0 }).sort({ createdAt: -1 });
+    // Filter to only unique pdfName (latest wins)
+    const seen = new Set();
+    const summaries = [];
+    for (const s of all) {
+      if (!seen.has(s.pdfName)) {
+        summaries.push(s);
+        seen.add(s.pdfName);
+      }
+    }
     res.json({ summaries });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch summaries." });
@@ -104,6 +112,11 @@ const getOverallSummaryController = async (req, res) => {
     }
     res.json({ overallSummary, pros, cons, finalJudgment });
   } catch (error) {
+    console.error(
+      "Error in getOverallSummaryController:",
+      error.message,
+      error.response?.data
+    );
     res.status(500).json({ error: "Failed to get overall summary." });
   }
 };
