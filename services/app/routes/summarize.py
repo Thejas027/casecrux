@@ -17,3 +17,4 @@ async def summarize_overall_endpoint(request: Request):
     summaries = data.get("summaries", [])
     result = summarize_overall(summaries)
     return {"overall_summary": result}
+

@@ -87,30 +87,18 @@ const getOverallSummaryController = async (req, res) => {
       {},
       { summary: 1, pdfName: 1, _id: 0 }
     ).sort({ createdAt: 1 });
+    console.log("Summaries sent to ML service:", summaries);
     if (!summaries.length)
       return res.json({ overallSummary: "No summaries available." });
-    // Call ML service with all summaries for overall summary, pros/cons, outcomes, acts used
     const mlServiceUrl = "https://casecrux.onrender.com/summarize_overall";
     const response = await axios.post(
       mlServiceUrl,
       { summaries },
-      {
-        timeout: 300000,
-      }
+      { timeout: 300000 }
     );
-    // Try to parse structured response (JSON) if possible
-    let overallSummary = response.data.overall_summary;
-    let pros = null,
-      cons = null,
-      finalJudgment = null;
-    // Try to extract sections if the LLM returns JSON
-    if (typeof overallSummary === "object") {
-      pros = overallSummary.pros || null;
-      cons = overallSummary.cons || null;
-      finalJudgment = overallSummary.finalJudgment || null;
-      overallSummary = overallSummary.text || "";
-    }
-    res.json({ overallSummary, pros, cons, finalJudgment });
+    // Accept both string and object response
+    let overallSummary = response.data.overall_summary || response.data;
+    res.json({ overallSummary });
   } catch (error) {
     console.error(
       "Error in getOverallSummaryController:",
