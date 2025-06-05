@@ -64,21 +64,18 @@ Summaries:
 '''
     from langchain.docstore.document import Document
     from langchain.prompts import PromptTemplate
-    from langchain.chains.summarize import load_summarize_chain
+    from langchain.chains.llm import LLMChain
     from langchain_groq import ChatGroq
     from app.config import get_next_groq_api_key
     llm = ChatGroq(groq_api_key=get_next_groq_api_key(),
                    model_name="llama3-8b-8192")
-    doc = Document(page_content=prompt)
-    chain = load_summarize_chain(
-        llm, chain_type="stuff", combine_prompt=PromptTemplate.from_template("{text}"))
+    chain = LLMChain(llm=llm, prompt=PromptTemplate.from_template("{text}"))
     import json
     import re
-    result = chain.invoke([doc])
+    result = chain.run({"text": prompt})
     try:
         return json.loads(result)
     except Exception:
-        # Try to extract JSON array from output (even if surrounded by text/markdown)
         match = re.search(r'\[.*?\]', result, re.DOTALL)
         if match:
             try:
