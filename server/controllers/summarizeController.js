@@ -2,6 +2,7 @@ const axios = require("axios");
 const multer = require("multer");
 const FormData = require("form-data"); // Added
 const Summary = require("../models/Summary");
+const MultiSummary = require("../models/MultiSummary"); // Import MultiSummary
 
 // Configure multer for in-memory file storage
 const storage = multer.memoryStorage();
@@ -80,14 +81,13 @@ const getAllSummariesController = async (req, res) => {
   }
 };
 
-// GET /api/overall-summary - summarize all summaries using ML service
+// GET /api/overall-summary - summarize all summaries using ML service and store in MultiSummary
 const getOverallSummaryController = async (req, res) => {
   try {
     const summaries = await Summary.find(
       {},
       { summary: 1, pdfName: 1, _id: 0 }
     ).sort({ createdAt: 1 });
-    console.log("Summaries sent to ML service:", summaries);
     if (!summaries.length)
       return res.json({ overallSummary: "No summaries available." });
     const mlServiceUrl = "https://casecrux.onrender.com/summarize_overall";
@@ -96,9 +96,19 @@ const getOverallSummaryController = async (req, res) => {
       { summaries },
       { timeout: 300000 }
     );
-    // Accept both string and object response
     let overallSummary = response.data.overall_summary || response.data;
-    res.json({ overallSummary });
+    // Save to MultiSummary collection (history)
+    const multiSummaryDoc = await MultiSummary.create({
+      caseId: req.body?.caseId || `case-${Date.now()}`,
+      summaries,
+      finalSummary:
+        typeof overallSummary === "string"
+          ? overallSummary
+          : JSON.stringify(overallSummary),
+      pros: overallSummary.pros || [],
+      cons: overallSummary.cons || [],
+    });
+    res.json({ overallSummary, multiSummaryId: multiSummaryDoc._id });
   } catch (error) {
     console.error(
       "Error in getOverallSummaryController:",
@@ -106,6 +116,30 @@ const getOverallSummaryController = async (req, res) => {
       error.response?.data
     );
     res.status(500).json({ error: "Failed to get overall summary." });
+  }
+};
+
+// GET /api/overall-history - get all overall summaries (history)
+const getOverallHistoryController = async (req, res) => {
+  try {
+    const history = await MultiSummary.find({}, { __v: 0 }).sort({
+      createdAt: -1,
+    });
+    res.json({ history });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch overall summary history." });
+  }
+};
+
+// GET /api/overall-summary/:id - get a specific overall summary by id
+const getOverallSummaryByIdController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doc = await MultiSummary.findById(id);
+    if (!doc) return res.status(404).json({ error: "Not found" });
+    res.json(doc);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch overall summary." });
   }
 };
 
@@ -126,4 +160,6 @@ module.exports = {
   getOverallSummaryController,
   deleteSummaryController,
   upload, // Export multer instance for the route
+  getOverallHistoryController,
+  getOverallSummaryByIdController,
 };
