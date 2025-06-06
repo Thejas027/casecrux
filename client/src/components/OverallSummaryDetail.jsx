@@ -36,12 +36,7 @@ function OverallSummaryDetail({ summaryId }) {
     URL.revokeObjectURL(url);
   };
 
-  if (!summaryId)
-    return (
-      <div className="p-8 text-[#e0e7ef]">
-        Select a summary to view details.
-      </div>
-    );
+  if (!summaryId) return null;
   if (loading) return <div className="p-8 text-[#e0e7ef]">Loading...</div>;
   if (error) return <div className="p-8 text-red-400">{error}</div>;
   if (!summary) return null;

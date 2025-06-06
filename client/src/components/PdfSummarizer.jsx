@@ -177,12 +177,38 @@ function PdfSummarizer() {
         )}
         {summary && (
           <div className="mt-6 bg-[#23272f] shadow-md rounded-xl px-8 pt-6 pb-8 border border-[#7f5af0]">
-            <h2
-              className="text-2xl font-semibold mb-3"
-              style={{ color: "#7f5af0" }}
-            >
-              Latest Summary:
-            </h2>
+            <div className="flex justify-between items-center mb-3">
+              <h2
+                className="text-2xl font-semibold"
+                style={{ color: "#7f5af0" }}
+              >
+                Latest Summary:
+              </h2>
+              <button
+                onClick={() => {
+                  const blob = new Blob([summary], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "pdf-summary.txt";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="bg-[#2cb67d] hover:bg-[#7f5af0] text-[#18181b] font-bold py-1 px-4 rounded-lg text-sm ml-2"
+                title="Download PDF Summary"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z" />
+                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                </svg>
+              </button>
+            </div>
             <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-[#e0e7ef]">
               <pre className="whitespace-pre-wrap bg-[#18181b] p-4 rounded text-[#e0e7ef] border border-[#7f5af0]">
                 {summary}
@@ -206,15 +232,72 @@ function PdfSummarizer() {
                     ? summaryText.slice(0, 180) + "..."
                     : summaryText;
                 return (
-                  <SummaryCard
+                  <div
                     key={s._id}
-                    _id={s._id}
-                    pdfName={s.pdfName}
-                    preview={preview}
-                    onDelete={handleDeleteSummary}
-                    onShowDetail={() => navigate(`/summary/${s._id}`)}
-                    accentColor={idx % 2 === 0 ? "#7f5af0" : "#2cb67d"}
-                  />
+                    className="bg-gradient-to-br from-[#23272f] to-[#18181b] shadow-lg rounded-lg p-4 border-2 flex flex-col justify-between"
+                    style={{
+                      borderColor: idx % 2 === 0 ? "#7f5af0" : "#2cb67d",
+                    }}
+                  >
+                    <div>
+                      <span
+                        className="font-semibold text-lg truncate"
+                        title={s.pdfName}
+                        style={{ color: idx % 2 === 0 ? "#7f5af0" : "#2cb67d" }}
+                      >
+                        {s.pdfName}
+                      </span>
+                      <div className="text-[#e0e7ef] text-sm whitespace-pre-wrap mt-2">
+                        {preview}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={() => navigate(`/summary/${s._id}`)}
+                        className="text-xs bg-[#7f5af0] hover:bg-[#2cb67d] text-white px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon"
+                      >
+                        Show
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSummary(s._id)}
+                        className="text-xs bg-[#2cb67d] hover:bg-[#7f5af0] text-[#18181b] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        title="Download PDF Summary"
+                        className="text-xs bg-[#23272f] hover:bg-[#2cb67d] text-[#7f5af0] hover:text-[#18181b] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon border border-[#7f5af0]"
+                        onClick={() => {
+                          const blob = new Blob(
+                            [
+                              typeof s.summary === "string"
+                                ? s.summary
+                                : s.summary.output_text ||
+                                  JSON.stringify(s.summary, null, 2),
+                            ],
+                            { type: "text/plain" }
+                          );
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `${s.pdfName || s._id}-summary.txt`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z" />
+                          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
             </div>
