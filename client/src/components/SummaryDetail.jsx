@@ -35,7 +35,9 @@ function SummaryDetail() {
     <nav className="text-sm mb-4" aria-label="Breadcrumb">
       <ol className="list-reset flex text-[#7f5af0]">
         <li>
-          <Link to="/" className="hover:underline">Home</Link>
+          <Link to="/" className="hover:underline">
+            Home
+          </Link>
         </li>
         <li>
           <span className="mx-2">&gt;</span>
@@ -69,11 +71,15 @@ function SummaryDetail() {
             title="Download PDF Summary"
             className="ml-4 bg-[#23272f] border border-[#7f5af0] text-[#7f5af0] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150"
             onClick={() => {
-              const blob = new Blob([
-                typeof summary.summary === "string"
-                  ? summary.summary
-                  : summary.summary.output_text || JSON.stringify(summary.summary, null, 2),
-              ], { type: "text/plain" });
+              const blob = new Blob(
+                [
+                  typeof summary.summary === "string"
+                    ? summary.summary
+                    : summary.summary.output_text ||
+                      JSON.stringify(summary.summary, null, 2),
+                ],
+                { type: "text/plain" }
+              );
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;

@@ -43,7 +43,9 @@ function OverallSummaryDetail() {
     <nav className="text-sm mb-4" aria-label="Breadcrumb">
       <ol className="list-reset flex text-[#7f5af0]">
         <li>
-          <Link to="/" className="hover:underline">Home</Link>
+          <Link to="/" className="hover:underline">
+            Home
+          </Link>
         </li>
         <li>
           <span className="mx-2">&gt;</span>
