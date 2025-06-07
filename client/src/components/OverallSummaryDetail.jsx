@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
-function OverallSummaryDetail({ summaryId }) {
+function OverallSummaryDetail() {
+  const { id } = useParams();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!summaryId) return;
+    if (!id) return;
     setLoading(true);
     setError("");
     setSummary(null);
     axios
-      .get(`http://localhost:5000/api/overall-summary/${summaryId}`)
+      .get(`http://localhost:5000/api/overall-summary/${id}`)
       .then((res) => setSummary(res.data))
       .catch(() => setError("Failed to fetch summary."))
       .finally(() => setLoading(false));
-  }, [summaryId]);
+  }, [id]);
 
   const handleDownload = () => {
     if (!summary) return;
@@ -31,12 +33,12 @@ function OverallSummaryDetail({ summaryId }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `overall-summary-${summaryId}.txt`;
+    a.download = `overall-summary-${id}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  if (!summaryId) return null;
+  if (!id) return null;
   if (loading) return <div className="p-8 text-[#e0e7ef]">Loading...</div>;
   if (error) return <div className="p-8 text-red-400">{error}</div>;
   if (!summary) return null;

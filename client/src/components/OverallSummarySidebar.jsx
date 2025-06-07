@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-function OverallSummarySidebar({ onSelect, selectedId }) {
+function OverallSummarySidebar() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchHistory() {
@@ -70,12 +72,8 @@ function OverallSummarySidebar({ onSelect, selectedId }) {
           <li key={item._id}>
             <div className="bg-[#18181b] rounded-lg flex flex-col p-0">
               <button
-                className={`w-full text-left px-3 py-2 rounded-t-lg transition-colors duration-150 ${
-                  selectedId === item._id
-                    ? "bg-[#7f5af0] text-white"
-                    : "bg-[#18181b] text-[#e0e7ef] hover:bg-[#2cb67d] hover:text-[#18181b]"
-                }`}
-                onClick={() => onSelect(item._id)}
+                className={`w-full text-left px-3 py-2 rounded-t-lg transition-colors duration-150 bg-[#18181b] text-[#e0e7ef] hover:bg-[#2cb67d] hover:text-[#18181b]`}
+                onClick={() => navigate(`/overall-summary/${item._id}`)}
               >
                 {item.caseId || item._id}
                 <span className="block text-xs text-gray-400">
