@@ -66,7 +66,10 @@ function PdfSummarizer() {
       } else if (response.data && typeof response.data.summary === "string") {
         summaryText = response.data.summary;
       } else if (response.data && typeof response.data.summary === "object") {
-        summaryText = response.data.summary.summary || response.data.summary.output_text || "";
+        summaryText =
+          response.data.summary.summary ||
+          response.data.summary.output_text ||
+          "";
       } else {
         setError(
           "Failed to parse summary from the server response. Expected 'response.data.summary.output_text' to be a string."
@@ -229,17 +232,33 @@ function PdfSummarizer() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {allSummaries.map((s, idx) => {
-                const summaryText = typeof s.summary === "string" ? s.summary : s.summary.output_text || JSON.stringify(s.summary);
-                const preview = summaryText.length > 180 ? summaryText.slice(0, 180) + "..." : summaryText;
+                const summaryText =
+                  typeof s.summary === "string"
+                    ? s.summary
+                    : s.summary.output_text || JSON.stringify(s.summary);
+                const preview =
+                  summaryText.length > 180
+                    ? summaryText.slice(0, 180) + "..."
+                    : summaryText;
                 return (
                   <div
                     key={s._id}
                     className="bg-gradient-to-br from-[#18181b] to-black shadow-lg rounded-lg p-4 border-2 flex flex-col justify-between"
-                    style={{ borderColor: idx % 2 === 0 ? "#22d3ee" : "#06b6d4" }}
+                    style={{
+                      borderColor: idx % 2 === 0 ? "#22d3ee" : "#06b6d4",
+                    }}
                   >
                     <div>
-                      <span className="font-semibold text-lg truncate" title={s.pdfName} style={{ color: idx % 2 === 0 ? "#22d3ee" : "#06b6d4" }}>{s.pdfName}</span>
-                      <div className="text-[#e0e7ef] text-sm whitespace-pre-wrap mt-2">{preview}</div>
+                      <span
+                        className="font-semibold text-lg truncate"
+                        title={s.pdfName}
+                        style={{ color: idx % 2 === 0 ? "#22d3ee" : "#06b6d4" }}
+                      >
+                        {s.pdfName}
+                      </span>
+                      <div className="text-[#e0e7ef] text-sm whitespace-pre-wrap mt-2">
+                        {preview}
+                      </div>
                     </div>
                     <div className="flex gap-2 mt-4">
                       <button
@@ -258,11 +277,15 @@ function PdfSummarizer() {
                         title="Download PDF Summary"
                         className="text-xs bg-black border border-cyan-400 text-cyan-400 px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150"
                         onClick={() => {
-                          const blob = new Blob([
-                            typeof s.summary === "string"
-                              ? s.summary
-                              : s.summary.output_text || JSON.stringify(s.summary, null, 2),
-                          ], { type: "text/plain" });
+                          const blob = new Blob(
+                            [
+                              typeof s.summary === "string"
+                                ? s.summary
+                                : s.summary.output_text ||
+                                  JSON.stringify(s.summary, null, 2),
+                            ],
+                            { type: "text/plain" }
+                          );
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement("a");
                           a.href = url;
@@ -301,7 +324,10 @@ function PdfSummarizer() {
         </div>
         {overallSummary && (
           <div className="mt-8 bg-[#18181b] border border-cyan-400 rounded-xl px-8 pt-6 pb-8">
-            <h2 className="text-2xl font-bold mb-2" style={{ color: "#22d3ee" }}>
+            <h2
+              className="text-2xl font-bold mb-2"
+              style={{ color: "#22d3ee" }}
+            >
               Overall Summary
             </h2>
             <div className="whitespace-pre-wrap text-[#e0e7ef] text-base">
