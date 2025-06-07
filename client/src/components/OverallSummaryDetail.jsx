@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 function OverallSummaryDetail() {
   const { id } = useParams();
   const [summary, setSummary] = useState(null);
@@ -14,7 +16,7 @@ function OverallSummaryDetail() {
     setError("");
     setSummary(null);
     axios
-      .get(`http://localhost:5000/api/overall-summary/${id}`)
+      .get(`${BACKEND_URL}/api/overall-summary/${id}`)
       .then((res) => setSummary(res.data))
       .catch(() => setError("Failed to fetch summary."))
       .finally(() => setLoading(false));

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 function SummaryDetail() {
   const { id } = useParams();
   const [summary, setSummary] = useState(null);
@@ -13,7 +15,7 @@ function SummaryDetail() {
       setLoading(true);
       setError("");
       try {
-        const res = await axios.get(`http://localhost:5000/api/summaries`);
+        const res = await axios.get(`${BACKEND_URL}/api/summaries`);
         const found = (res.data.summaries || []).find((s) => s._id === id);
         if (!found) {
           setError("Summary not found.");

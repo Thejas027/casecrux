@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 function MultiPdfSummarizer() {
   const [files, setFiles] = useState([]);
   const [caseId, setCaseId] = useState("");
@@ -36,7 +38,7 @@ function MultiPdfSummarizer() {
     formData.append("caseid", caseId);
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/multi-summarize",
+        `${BACKEND_URL}/api/multi-summarize`,
         formData,
         {
           headers: {

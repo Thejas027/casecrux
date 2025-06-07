@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 function OverallSummarySidebar() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,9 +15,7 @@ function OverallSummarySidebar() {
       setLoading(true);
       setError("");
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/overall-history"
-        );
+        const res = await axios.get(`${BACKEND_URL}/api/overall-history`);
         setHistory(res.data.history || []);
       } catch (err) {
         setError("Failed to fetch overall summary history.");
@@ -32,7 +32,7 @@ function OverallSummarySidebar() {
     try {
       // Fetch the overall summary by ID to get all included summaries
       const res = await axios.get(
-        `http://localhost:5000/api/overall-summary/${item._id}`
+        `${BACKEND_URL}/api/overall-summary/${item._id}`
       );
       const overall = res.data;
       if (!overall.summaries || !overall.summaries.length) {
@@ -62,10 +62,12 @@ function OverallSummarySidebar() {
 
   // Delete handler for overall summary
   const handleDelete = async (item) => {
-    if (!window.confirm("Are you sure you want to delete this overall summary?"))
+    if (
+      !window.confirm("Are you sure you want to delete this overall summary?")
+    )
       return;
     try {
-      await axios.delete(`http://localhost:5000/api/overall-summary/${item._id}`);
+      await axios.delete(`${BACKEND_URL}/api/overall-summary/${item._id}`);
       setHistory((prev) => prev.filter((h) => h._id !== item._id));
     } catch {
       alert("Failed to delete overall summary.");
@@ -84,7 +86,7 @@ function OverallSummarySidebar() {
           <li key={item._id}>
             <div className="bg-[#18181b] rounded-lg flex flex-col p-0">
               <button
-                className={`w-full text-left px-3 py-2 rounded-t-lg transition-colors duration-150 bg-[#18181b] text-[#e0e7ef] hover:bg-[#2cb67d] hover:text-[#18181b]`}
+                className={`w-full text-left px-3 py-2 rounded-t-lg transition-colors duration-150 bg-[#18181b] text-[#e0e7ef] hover:bg-[#0a0c0b] hover:text-[#afafbd] cursor-pointer`}
                 onClick={() => navigate(`/overall-summary/${item._id}`)}
               >
                 {item.caseId || item._id}
@@ -94,7 +96,7 @@ function OverallSummarySidebar() {
               </button>
               <button
                 title="Download PDF Summary"
-                className="w-full flex justify-center items-center bg-[#18181b] hover:bg-[#23272f] text-[#2cb67d] hover:text-[#7f5af0] rounded-b-lg py-2 border-t border-[#23272f] transition-colors duration-150"
+                className="w-full flex justify-center cursor-pointer items-center bg-[#18181b] hover:bg-[#23272f] text-[#2cb67d] hover:text-[#7f5af0] rounded-b-lg py-2 border-t border-[#23272f] transition-colors duration-150"
                 onClick={() => handleDownload(item)}
               >
                 <svg
@@ -113,7 +115,7 @@ function OverallSummarySidebar() {
               </button>
               <button
                 title="Delete Overall Summary"
-                className="w-full flex justify-center items-center bg-[#18181b] hover:bg-red-700 text-red-400 hover:text-white rounded-b-lg py-2 border-t border-[#23272f] transition-colors duration-150"
+                className="w-full flex justify-center cursor-pointer items-center bg-[#18181b] hover:bg-red-700 text-red-400 hover:text-white rounded-b-lg py-2 border-t border-[#23272f] transition-colors duration-150"
                 onClick={() => handleDelete(item)}
               >
                 <svg

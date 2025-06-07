@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 function PdfSummarizer() {
   const [file, setFile] = useState(null);
   const [summary, setSummary] = useState("");
@@ -18,7 +20,7 @@ function PdfSummarizer() {
 
   const fetchSummaries = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/summaries");
+      const res = await axios.get(`${BACKEND_URL}/api/summaries`);
       setAllSummaries(res.data.summaries || []);
     } catch (err) {
       // ignore fetch error
@@ -48,7 +50,7 @@ function PdfSummarizer() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/summarize",
+        `${BACKEND_URL}/api/summarize`,
         formData,
         {
           headers: {
@@ -66,7 +68,10 @@ function PdfSummarizer() {
       } else if (response.data && typeof response.data.summary === "string") {
         summaryText = response.data.summary;
       } else if (response.data && typeof response.data.summary === "object") {
-        summaryText = response.data.summary.summary || response.data.summary.output_text || "";
+        summaryText =
+          response.data.summary.summary ||
+          response.data.summary.output_text ||
+          "";
       } else {
         setError(
           "Failed to parse summary from the server response. Expected 'response.data.summary.output_text' to be a string."
@@ -101,7 +106,7 @@ function PdfSummarizer() {
     setOverallSummary("");
     setError("");
     try {
-      const res = await axios.get("http://localhost:5000/api/overall-summary");
+      const res = await axios.get(`${BACKEND_URL}/api/overall-summary`);
       setOverallSummary(res.data.overallSummary || "");
     } catch (err) {
       setError("Failed to get overall summary.");
@@ -114,7 +119,7 @@ function PdfSummarizer() {
       return;
     }
     try {
-      await axios.delete(`http://localhost:5000/api/summaries/${id}`);
+      await axios.delete(`${BACKEND_URL}/api/summaries/${id}`);
       setAllSummaries((prev) => prev.filter((s) => s._id !== id));
       setSummary("");
       setOverallSummary("");
@@ -129,9 +134,9 @@ function PdfSummarizer() {
     <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef] py-8 px-2">
       <div className="max-w-3xl mx-auto">
         <h1
-          className="text-4xl font-extrabold text-center mb-8"
+          className="text-5xl font-extrabold text-center mb-8 tracking-wider"
           style={{
-            color: "#7f5af0",
+            color: "#ffffff",
           }}
         >
           CaseCrux
@@ -159,7 +164,7 @@ function PdfSummarizer() {
             <button
               type="submit"
               disabled={isLoading || !file}
-              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 ${
+              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer ${
                 isLoading || !file ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
@@ -229,40 +234,60 @@ function PdfSummarizer() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {allSummaries.map((s, idx) => {
-                const summaryText = typeof s.summary === "string" ? s.summary : s.summary.output_text || JSON.stringify(s.summary);
-                const preview = summaryText.length > 180 ? summaryText.slice(0, 180) + "..." : summaryText;
+                const summaryText =
+                  typeof s.summary === "string"
+                    ? s.summary
+                    : s.summary.output_text || JSON.stringify(s.summary);
+                const preview =
+                  summaryText.length > 180
+                    ? summaryText.slice(0, 180) + "..."
+                    : summaryText;
                 return (
                   <div
                     key={s._id}
                     className="bg-gradient-to-br from-[#23272f] to-[#18181b] shadow-lg rounded-lg p-4 border-2 flex flex-col justify-between"
-                    style={{ borderColor: idx % 2 === 0 ? "#7f5af0" : "#2cb67d" }}
+                    style={{
+                      borderColor: idx % 2 === 0 ? "#7f5af0" : "#2cb67d",
+                    }}
                   >
                     <div>
-                      <span className="font-semibold text-lg truncate" title={s.pdfName} style={{ color: idx % 2 === 0 ? "#7f5af0" : "#2cb67d" }}>{s.pdfName}</span>
-                      <div className="text-[#e0e7ef] text-sm whitespace-pre-wrap mt-2">{preview}</div>
+                      <span
+                        className="font-semibold text-lg truncate"
+                        title={s.pdfName}
+                        style={{ color: idx % 2 === 0 ? "#7f5af0" : "#2cb67d" }}
+                      >
+                        {s.pdfName}
+                      </span>
+                      <div className="text-[#e0e7ef] text-sm whitespace-pre-wrap mt-2">
+                        {preview}
+                      </div>
                     </div>
                     <div className="flex gap-2 mt-4">
                       <button
                         onClick={() => navigate(`/summary/${s._id}`)}
-                        className="text-xs bg-[#7f5af0] hover:bg-[#4b267f] text-white px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon transition-colors duration-150"
+                        className="text-xs bg-[#7f5af0] hover:bg-[#4b267f] text-white px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon transition-colors duration-150 cursor-pointer"
                       >
                         Show
                       </button>
                       <button
                         onClick={() => handleDeleteSummary(s._id)}
-                        className="text-xs bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon transition-colors duration-150"
+                        className="text-xs bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon transition-colors duration-150 cursor-pointer"
                       >
                         Delete
                       </button>
                       <button
                         title="Download PDF Summary"
-                        className="text-xs bg-[#23272f] border border-[#7f5af0] text-[#7f5af0] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150"
+                        className="text-xs bg-[#23272f] border border-[#7f5af0] text-[#7f5af0] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150 cursor-pointer"
                         onClick={() => {
-                          const blob = new Blob([
-                            typeof s.summary === "string"
-                              ? s.summary
-                              : s.summary.output_text || JSON.stringify(s.summary, null, 2),
-                          ], { type: "text/plain" });
+                          const blob = new Blob(
+                            [
+                              typeof s.summary === "string"
+                                ? s.summary
+                                : s.summary.output_text ||
+                                  JSON.stringify(s.summary, null, 2),
+                            ],
+                            { type: "text/plain" }
+                          );
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement("a");
                           a.href = url;
@@ -293,7 +318,7 @@ function PdfSummarizer() {
           <div className="flex justify-center mt-8">
             <button
               onClick={handleOverallSummary}
-              className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200"
+              className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer"
             >
               Get Overall Summary
             </button>
@@ -301,7 +326,10 @@ function PdfSummarizer() {
         </div>
         {overallSummary && (
           <div className="mt-8 bg-[#23272f] border border-[#2cb67d] rounded-xl px-8 pt-6 pb-8">
-            <h2 className="text-2xl font-bold mb-2" style={{ color: "#2cb67d" }}>
+            <h2
+              className="text-2xl font-bold mb-2"
+              style={{ color: "#2cb67d" }}
+            >
               Overall Summary
             </h2>
             <div className="whitespace-pre-wrap text-[#e0e7ef] text-base">
