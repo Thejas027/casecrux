@@ -60,9 +60,25 @@ function OverallSummarySidebar() {
     }
   };
 
+  // Delete handler for overall summary
+  const handleDelete = async (item) => {
+    if (
+      !window.confirm("Are you sure you want to delete this overall summary?")
+    )
+      return;
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/overall-summary/${item._id}`
+      );
+      setHistory((prev) => prev.filter((h) => h._id !== item._id));
+    } catch {
+      alert("Failed to delete overall summary.");
+    }
+  };
+
   return (
-    <aside className="w-72 bg-[#23272f] border-r-2 border-[#7f5af0] min-h-screen p-4 flex flex-col">
-      <h2 className="text-xl font-bold mb-4 text-[#7f5af0]">
+      <aside className="w-72 bg-black border-r-2 border-cyan-500 min-h-screen p-4 flex flex-col">
+      <h2 className="text-xl font-bold mb-4 text-cyan-400">
         Overall Summary History
       </h2>
       {loading && <div className="text-[#e0e7ef]">Loading...</div>}
@@ -72,7 +88,7 @@ function OverallSummarySidebar() {
           <li key={item._id}>
             <div className="bg-[#18181b] rounded-lg flex flex-col p-0">
               <button
-                className={`w-full text-left px-3 py-2 rounded-t-lg transition-colors duration-150 bg-[#18181b] text-[#e0e7ef] hover:bg-[#2cb67d] hover:text-[#18181b]`}
+                className={`w-full text-left px-3 py-2 rounded-t-lg transition-colors duration-150 bg-[#18181b] text-[#e0e7ef] hover:bg-cyan-400 hover:text-[#18181b]`}
                 onClick={() => navigate(`/overall-summary/${item._id}`)}
               >
                 {item.caseId || item._id}
@@ -98,6 +114,26 @@ function OverallSummarySidebar() {
                 <span className="ml-2 text-xs font-semibold">
                   Download PDF Summary
                 </span>
+              </button>
+              <button
+                title="Delete Overall Summary"
+                className="w-full flex justify-center items-center bg-[#18181b] hover:bg-red-700 text-red-400 hover:text-white rounded-b-lg py-2 border-t border-[#23272f] transition-colors duration-150"
+                onClick={() => handleDelete(item)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5.5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6zm2 .5a.5.5 0 0 1 .5-.5.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6z" />
+                  <path
+                    fillRule="evenodd"
+                    d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1 0-2h3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3a.5.5 0 0 0-.5.5V4a.5.5 0 0 0 .5.5H13.5a.5.5 0 0 0 .5-.5v-.5a.5.5 0 0 0-.5-.5h-11z"
+                  />
+                </svg>
+                <span className="ml-2 text-xs font-semibold">Delete</span>
               </button>
             </div>
           </li>

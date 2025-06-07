@@ -33,7 +33,7 @@ function SummaryDetail() {
   // Breadcrumbs
   const breadcrumbs = (
     <nav className="text-sm mb-4" aria-label="Breadcrumb">
-      <ol className="list-reset flex text-[#7f5af0]">
+      <ol className="list-reset flex text-[#22d3ee]">
         <li>
           <Link to="/" className="hover:underline">
             Home
@@ -59,17 +59,17 @@ function SummaryDetail() {
       : summary.summary.output_text || JSON.stringify(summary.summary);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef] py-8 px-2">
-      <div className="max-w-2xl mx-auto bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 border-2 border-[#7f5af0]">
+    <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#0e2222] text-[#e0e7ef] py-8 px-2">
+      <div className="max-w-2xl mx-auto bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 border-2 border-[#22d3ee]">
         {breadcrumbs}
         <h1
           className="text-3xl font-extrabold mb-4 flex items-center justify-between"
-          style={{ color: "#7f5af0" }}
+          style={{ color: "#22d3ee" }}
         >
           <span>{summary.pdfName}</span>
           <button
             title="Download PDF Summary"
-            className="ml-4 bg-[#23272f] border border-[#7f5af0] text-[#7f5af0] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150"
+            className="ml-4 bg-[#23272f] border border-[#22d3ee] text-[#22d3ee] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150"
             onClick={() => {
               const blob = new Blob(
                 [
@@ -101,7 +101,7 @@ function SummaryDetail() {
             </svg>
           </button>
         </h1>
-        <pre className="whitespace-pre-wrap bg-[#18181b] p-4 rounded text-[#e0e7ef] border border-[#7f5af0] text-lg">
+        <pre className="whitespace-pre-wrap bg-[#18181b] p-4 rounded text-[#e0e7ef] border border-[#22d3ee] text-lg">
           {summaryText}
         </pre>
       </div>

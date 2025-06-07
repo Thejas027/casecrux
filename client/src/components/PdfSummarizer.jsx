@@ -126,24 +126,24 @@ function PdfSummarizer() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef] py-8 px-2">
+    <div className="min-h-screen bg-gradient-to-br from-black via-[#18181b] to-[#0e2222] text-[#e0e7ef] py-8 px-2">
       <div className="max-w-3xl mx-auto">
         <h1
           className="text-4xl font-extrabold text-center mb-8"
           style={{
-            color: "#7f5af0",
+            color: "#22d3ee", // cyan-400
           }}
         >
           CaseCrux
         </h1>
         <form
           onSubmit={handleSubmit}
-          className="bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 mb-8 border-2 border-[#7f5af0]"
+          className="bg-[#18181b] shadow-2xl rounded-xl px-10 pt-8 pb-10 mb-8 border-2 border-cyan-400"
         >
           <div className="mb-6">
             <label
               htmlFor="pdf-upload"
-              className="block text-[#7f5af0] text-lg font-bold mb-2"
+              className="block text-cyan-400 text-lg font-bold mb-2"
             >
               Upload PDF:
             </label>
@@ -152,14 +152,14 @@ function PdfSummarizer() {
               type="file"
               accept="application/pdf"
               onChange={handleFileChange}
-              className="shadow appearance-none border border-[#7f5af0] rounded w-full py-2 px-3 bg-[#18181b] text-[#e0e7ef] leading-tight focus:outline-none focus:ring-2 focus:ring-[#7f5af0] text-lg"
+              className="shadow appearance-none border border-cyan-400 rounded w-full py-2 px-3 bg-black text-[#e0e7ef] leading-tight focus:outline-none focus:ring-2 focus:ring-cyan-400 text-lg"
             />
           </div>
           <div className="flex items-center justify-between">
             <button
               type="submit"
               disabled={isLoading || !file}
-              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 ${
+              className={`bg-gradient-to-r from-cyan-400 to-cyan-600 hover:from-cyan-300 hover:to-cyan-500 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 ${
                 isLoading || !file ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
@@ -169,7 +169,7 @@ function PdfSummarizer() {
         </form>
         {error && (
           <div
-            className="bg-[#2cb67d] border border-[#7f5af0] text-[#18181b] px-4 py-3 rounded relative mb-4 text-lg"
+            className="bg-cyan-600 border border-cyan-400 text-black px-4 py-3 rounded relative mb-4 text-lg"
             role="alert"
           >
             <strong className="font-bold">Error: </strong>
@@ -177,11 +177,11 @@ function PdfSummarizer() {
           </div>
         )}
         {summary && (
-          <div className="mt-6 bg-[#23272f] shadow-md rounded-xl px-8 pt-6 pb-8 border border-[#7f5af0]">
+          <div className="mt-6 bg-[#18181b] shadow-md rounded-xl px-8 pt-6 pb-8 border border-cyan-400">
             <div className="flex justify-between items-center mb-3">
               <h2
                 className="text-2xl font-semibold"
-                style={{ color: "#7f5af0" }}
+                style={{ color: "#22d3ee" }}
               >
                 Latest Summary:
               </h2>
@@ -195,7 +195,7 @@ function PdfSummarizer() {
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
-                className="bg-[#2cb67d] hover:bg-[#7f5af0] text-[#18181b] font-bold py-1 px-4 rounded-lg text-sm ml-2"
+                className="bg-cyan-400 hover:bg-cyan-600 text-black font-bold py-1 px-4 rounded-lg text-sm ml-2"
                 title="Download PDF Summary"
               >
                 <svg
@@ -211,7 +211,7 @@ function PdfSummarizer() {
               </button>
             </div>
             <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-[#e0e7ef]">
-              <pre className="whitespace-pre-wrap bg-[#18181b] p-4 rounded text-[#e0e7ef] border border-[#7f5af0]">
+              <pre className="whitespace-pre-wrap bg-black p-4 rounded text-[#e0e7ef] border border-cyan-400">
                 {summary}
               </pre>
             </div>
@@ -220,12 +220,12 @@ function PdfSummarizer() {
         {/* Flat list of all summaries, no category grouping */}
         <div className="mt-10">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold" style={{ color: "#7f5af0" }}>
+            <h2 className="text-2xl font-bold" style={{ color: "#22d3ee" }}>
               All Summaries
             </h2>
           </div>
           {allSummaries.length === 0 ? (
-            <div className="text-lg text-[#a786df]">No summaries yet.</div>
+            <div className="text-lg text-cyan-300">No summaries yet.</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {allSummaries.map((s, idx) => {
@@ -234,17 +234,17 @@ function PdfSummarizer() {
                 return (
                   <div
                     key={s._id}
-                    className="bg-gradient-to-br from-[#23272f] to-[#18181b] shadow-lg rounded-lg p-4 border-2 flex flex-col justify-between"
-                    style={{ borderColor: idx % 2 === 0 ? "#7f5af0" : "#2cb67d" }}
+                    className="bg-gradient-to-br from-[#18181b] to-black shadow-lg rounded-lg p-4 border-2 flex flex-col justify-between"
+                    style={{ borderColor: idx % 2 === 0 ? "#22d3ee" : "#06b6d4" }}
                   >
                     <div>
-                      <span className="font-semibold text-lg truncate" title={s.pdfName} style={{ color: idx % 2 === 0 ? "#7f5af0" : "#2cb67d" }}>{s.pdfName}</span>
+                      <span className="font-semibold text-lg truncate" title={s.pdfName} style={{ color: idx % 2 === 0 ? "#22d3ee" : "#06b6d4" }}>{s.pdfName}</span>
                       <div className="text-[#e0e7ef] text-sm whitespace-pre-wrap mt-2">{preview}</div>
                     </div>
                     <div className="flex gap-2 mt-4">
                       <button
                         onClick={() => navigate(`/summary/${s._id}`)}
-                        className="text-xs bg-[#7f5af0] hover:bg-[#4b267f] text-white px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon transition-colors duration-150"
+                        className="text-xs bg-cyan-400 hover:bg-cyan-600 text-black px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon transition-colors duration-150"
                       >
                         Show
                       </button>
@@ -256,7 +256,7 @@ function PdfSummarizer() {
                       </button>
                       <button
                         title="Download PDF Summary"
-                        className="text-xs bg-[#23272f] border border-[#7f5af0] text-[#7f5af0] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150"
+                        className="text-xs bg-black border border-cyan-400 text-cyan-400 px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150"
                         onClick={() => {
                           const blob = new Blob([
                             typeof s.summary === "string"
@@ -277,7 +277,7 @@ function PdfSummarizer() {
                           height="16"
                           fill="currentColor"
                           viewBox="0 0 16 16"
-                          className="transition-colors duration-150 group-hover:text-[#2cb67d]"
+                          className="transition-colors duration-150 group-hover:text-cyan-300"
                         >
                           <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z" />
                           <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
@@ -293,15 +293,15 @@ function PdfSummarizer() {
           <div className="flex justify-center mt-8">
             <button
               onClick={handleOverallSummary}
-              className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200"
+              className="bg-gradient-to-r from-cyan-400 to-cyan-600 hover:from-cyan-300 hover:to-cyan-500 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200"
             >
               Get Overall Summary
             </button>
           </div>
         </div>
         {overallSummary && (
-          <div className="mt-8 bg-[#23272f] border border-[#2cb67d] rounded-xl px-8 pt-6 pb-8">
-            <h2 className="text-2xl font-bold mb-2" style={{ color: "#2cb67d" }}>
+          <div className="mt-8 bg-[#18181b] border border-cyan-400 rounded-xl px-8 pt-6 pb-8">
+            <h2 className="text-2xl font-bold mb-2" style={{ color: "#22d3ee" }}>
               Overall Summary
             </h2>
             <div className="whitespace-pre-wrap text-[#e0e7ef] text-base">

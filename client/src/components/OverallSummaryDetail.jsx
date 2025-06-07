@@ -41,7 +41,7 @@ function OverallSummaryDetail() {
   // Breadcrumbs
   const breadcrumbs = (
     <nav className="text-sm mb-4" aria-label="Breadcrumb">
-      <ol className="list-reset flex text-[#7f5af0]">
+      <ol className="list-reset flex text-[#22d3ee]">
         <li>
           <Link to="/" className="hover:underline">
             Home
@@ -61,21 +61,21 @@ function OverallSummaryDetail() {
   if (!summary) return null;
 
   return (
-    <div className="p-8 flex-1 min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef]">
-      <div className="max-w-2xl mx-auto bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 border-2 border-[#7f5af0]">
+    <div className="p-8 flex-1 min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#0e2222] text-[#e0e7ef]">
+      <div className="max-w-2xl mx-auto bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 border-2 border-[#22d3ee]">
         {breadcrumbs}
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-extrabold" style={{ color: "#7f5af0" }}>
+          <h1 className="text-2xl font-extrabold" style={{ color: "#22d3ee" }}>
             {summary.caseId || summary._id}
           </h1>
           <button
             onClick={handleDownload}
-            className="bg-[#7f5af0] hover:bg-[#2cb67d] text-white font-bold py-2 px-4 rounded-lg"
+            className="bg-[#22d3ee] hover:bg-[#2cb67d] text-white font-bold py-2 px-4 rounded-lg"
           >
             Download
           </button>
         </div>
-        <pre className="whitespace-pre-wrap bg-[#18181b] p-4 rounded text-[#e0e7ef] border border-[#7f5af0] text-lg overflow-x-auto">
+        <pre className="whitespace-pre-wrap bg-[#18181b] p-4 rounded text-[#e0e7ef] border border-[#22d3ee] text-lg overflow-x-auto">
           {summary.finalSummary || JSON.stringify(summary, null, 2)}
         </pre>
         {summary.pros && summary.pros.length > 0 && (
