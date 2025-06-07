@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 function OverallSummaryDetail() {
   const { id } = useParams();
@@ -38,6 +38,21 @@ function OverallSummaryDetail() {
     URL.revokeObjectURL(url);
   };
 
+  // Breadcrumbs
+  const breadcrumbs = (
+    <nav className="text-sm mb-4" aria-label="Breadcrumb">
+      <ol className="list-reset flex text-[#7f5af0]">
+        <li>
+          <Link to="/" className="hover:underline">Home</Link>
+        </li>
+        <li>
+          <span className="mx-2">&gt;</span>
+        </li>
+        <li className="text-[#2cb67d] font-semibold">OverallSummary-{id}</li>
+      </ol>
+    </nav>
+  );
+
   if (!id) return null;
   if (loading) return <div className="p-8 text-[#e0e7ef]">Loading...</div>;
   if (error) return <div className="p-8 text-red-400">{error}</div>;
@@ -46,6 +61,7 @@ function OverallSummaryDetail() {
   return (
     <div className="p-8 flex-1 min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef]">
       <div className="max-w-2xl mx-auto bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 border-2 border-[#7f5af0]">
+        {breadcrumbs}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-extrabold" style={{ color: "#7f5af0" }}>
             {summary.caseId || summary._id}
