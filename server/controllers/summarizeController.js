@@ -29,22 +29,29 @@ const summarizePdfController = async (req, res) => {
     // Prevent duplicate summary for same PDF name
     const { caseid } = req.body; // allow client to send a caseid
     let summaryDoc = await Summary.findOne({ pdfName: req.file.originalname });
+    const category =
+      response.data.summary.category ||
+      (response.data.summary && response.data.summary.category) ||
+      null;
     if (summaryDoc) {
       // Update existing summary
       summaryDoc.summary = response.data.summary;
       summaryDoc.caseId = caseid || summaryDoc.caseId || "default-case";
+      summaryDoc.category = category;
       await summaryDoc.save();
     } else {
       summaryDoc = await Summary.create({
         caseId: caseid || "default-case",
         pdfName: req.file.originalname,
         summary: response.data.summary,
+        category: category,
       });
     }
     res.json({
       _id: summaryDoc._id,
       pdfName: summaryDoc.pdfName,
       summary: summaryDoc.summary,
+      category: summaryDoc.category,
     });
   } catch (error) {
     console.error("Error calling ML service:", error.message);
