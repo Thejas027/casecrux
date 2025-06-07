@@ -5,20 +5,27 @@ from langchain_groq import ChatGroq
 from app.utils.pdf_reader import extract_text_from_pdf
 from app.config import get_next_groq_api_key
 
+# Updated prompts to include category extraction
 map_prompt = PromptTemplate.from_template("""
-Write a **detailed and comprehensive summary** of the following content. Include important points, subtopics, and any nuanced information:
+Write a **detailed and comprehensive summary** of the following content. Include important points, subtopics, and any nuanced information.
+
+After the summary, provide a single word or short phrase for the legal category of the case (e.g., tax, robbery, murder, contract, property, etc.) in the following format:
+Category: <category>
 
 {text}
 """)
 
 combine_prompt = PromptTemplate.from_template("""
-Given the summaries below, write a **detailed and structured summary** that preserves all meaningful insights:
+Given the summaries below, write a **detailed and structured summary** that preserves all meaningful insights.
+
+After the summary, provide a single word or short phrase for the overall legal category that best fits the combined cases (e.g., tax, robbery, murder, contract, property, etc.) in the following format:
+Category: <category>
 
 {text}
 """)
 
 
-def summarize_pdf(file_bytes: bytes) -> str:
+def summarize_pdf(file_bytes: bytes) -> dict:
     text = extract_text_from_pdf(file_bytes)
     chunks = [Document(page_content=text[i:i+3000])
               for i in range(0, len(text), 3000)]
@@ -27,7 +34,13 @@ def summarize_pdf(file_bytes: bytes) -> str:
                    model_name="llama3-8b-8192")
     chain = load_summarize_chain(
         llm, chain_type="map_reduce", map_prompt=map_prompt, combine_prompt=combine_prompt)
-    return chain.invoke(chunks)
+    result = chain.invoke(chunks)
+    # Parse category from result
+    import re
+    match = re.search(r"Category:\s*(.+)", result)
+    category = match.group(1).strip() if match else "Uncategorized"
+    summary = re.sub(r"Category:\s*.+", "", result).strip()
+    return {"summary": summary, "category": category}
 
 
 def summarize_overall(summaries: list):
