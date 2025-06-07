@@ -7,6 +7,7 @@ const {
   upload,
   getOverallHistoryController,
   getOverallSummaryByIdController,
+  deleteOverallSummaryController, // Add this import
 } = require("../controllers/summarizeController");
 
 const router = express.Router();
@@ -24,5 +25,7 @@ router.get("/overall-history", getOverallHistoryController); // New: history end
 router.get("/overall-summary/:id", getOverallSummaryByIdController); // New: fetch by id
 // DELETE /api/summaries/:id
 router.delete("/summaries/:id", deleteSummaryController);
+// DELETE /api/overall-summary/:id
+router.delete("/overall-summary/:id", deleteOverallSummaryController);
 
 module.exports = router;

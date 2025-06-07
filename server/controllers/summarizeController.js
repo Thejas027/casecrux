@@ -161,6 +161,17 @@ const deleteSummaryController = async (req, res) => {
   }
 };
 
+// DELETE /api/overall-summary/:id - delete an overall summary by _id
+const deleteOverallSummaryController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await MultiSummary.deleteOne({ _id: id });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete overall summary." });
+  }
+};
+
 module.exports = {
   summarizePdfController,
   getAllSummariesController,
@@ -169,4 +180,5 @@ module.exports = {
   upload, // Export multer instance for the route
   getOverallHistoryController,
   getOverallSummaryByIdController,
+  deleteOverallSummaryController, // Export new controller
 };
