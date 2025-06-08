@@ -60,7 +60,7 @@ pip install -r requirements.txt
 
 ### Usage
 
-- Open the frontend at [http://localhost:3000](http://localhost:3000)
+- Open the frontend at [http://localhost:3000] (http://localhost:3000)
 - Upload PDFs, view summaries, generate overall summaries, and manage your summary history.
 
 ## Folder Structure
