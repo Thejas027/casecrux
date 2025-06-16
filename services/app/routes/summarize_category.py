@@ -3,6 +3,7 @@ import cloudinary.api
 import cloudinary.uploader
 import requests
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 from app.services.summarizer import summarize_pdf, summarize_overall
 import tempfile
 import os
@@ -13,8 +14,13 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
 router = APIRouter()
 
 
+class CategoryRequest(BaseModel):
+    category: str
+
+
 @router.post("/summarize_category_overall")
-async def summarize_category_overall(category: str):
+async def summarize_category_overall(request: CategoryRequest):
+    category = request.category
     # Configure Cloudinary with environment variables
     cloudinary.config(
         cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
