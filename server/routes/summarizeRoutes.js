@@ -1,31 +1,43 @@
 const express = require("express");
+const upload = require("../middleware/multerUpload"); // Corrected import for multer
+
 const {
-  summarizePdfController,
-  getAllSummariesController,
-  getOverallSummaryController,
-  deleteSummaryController,
-  upload,
-  getOverallHistoryController,
-  getOverallSummaryByIdController,
-  deleteOverallSummaryController, // Add this import
-} = require("../controllers/summarizeController");
+  uploadAndSummarizePdf,
+  getAllUniqueIndividualSummaries,
+  getIndividualSummaryById,
+  deleteIndividualSummaryById,
+} = require("../controllers/individualSummaryController");
+
+const {
+  generateOrUpdateOverallSummary,
+  getOverallSummaryHistoryList,
+  getOverallSummaryDetailsById,
+  deleteOverallSummaryById,
+} = require("../controllers/overallSummaryController");
+
+const {
+  uploadAndAnalyzeMultiplePdfs,
+} = require("../controllers/multiDocumentController");
 
 const router = express.Router();
 
-// POST /api/summarize
-// The 'upload.single('file')' middleware processes a single file uploaded with the field name 'file'.
-router.post("/summarize", upload.single("file"), summarizePdfController);
-// GET /api/summaries
-router.get("/summaries", getAllSummariesController);
-// GET /api/overall-summary
-router.get("/overall-summary", getOverallSummaryController);
-// GET /api/overall-history
-router.get("/overall-history", getOverallHistoryController); // New: history endpoint
-// GET /api/overall-summary/:id
-router.get("/overall-summary/:id", getOverallSummaryByIdController); // New: fetch by id
-// DELETE /api/summaries/:id
-router.delete("/summaries/:id", deleteSummaryController);
-// DELETE /api/overall-summary/:id
-router.delete("/overall-summary/:id", deleteOverallSummaryController);
+// --- Individual Summary Routes ---
+router.post("/individual/upload", upload.single("file"), uploadAndSummarizePdf);
+router.get("/individual", getAllUniqueIndividualSummaries);
+router.get("/individual/:id", getIndividualSummaryById);
+router.delete("/individual/:id", deleteIndividualSummaryById);
+
+// --- Overall Summary Routes ---
+router.post("/overall/generate", generateOrUpdateOverallSummary);
+router.get("/overall/history", getOverallSummaryHistoryList);
+router.get("/overall/:id", getOverallSummaryDetailsById);
+router.delete("/overall/:id", deleteOverallSummaryById);
+
+// --- Multi-Document Summary Routes ---
+router.post(
+  "/multi/upload",
+  upload.array("files", 10), // Assuming max 10 files for multi-upload
+  uploadAndAnalyzeMultiplePdfs
+);
 
 module.exports = router;
