@@ -80,4 +80,4 @@ MIT
 
 ---
 
-**CaseCrux** — AI-powered legal document intelligence.
+**CaseCrux** — AI-powered legal document intelligence
