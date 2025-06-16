@@ -16,9 +16,21 @@ router.post("/category-overall-summary", async (req, res) => {
     const response = await axios.post(mlServiceUrl, { category });
     res.json(response.data);
   } catch (error) {
+    // Enhanced debugging: log and return more details
+    let debugInfo = {
+      message: error.message,
+      stack: error.stack,
+      responseData: error.response?.data,
+      responseStatus: error.response?.status,
+      requestUrl: error.config?.url,
+      requestData: error.config?.data,
+      requestHeaders: error.config?.headers,
+    };
+    console.error("[CategoryOverallSummary Error]", debugInfo);
     res.status(500).json({
       error: "Failed to get overall summary.",
       details: error.message,
+      debug: debugInfo,
     });
   }
 });

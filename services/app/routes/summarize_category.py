@@ -37,7 +37,7 @@ async def summarize_category_overall(request: CategoryRequest):
             max_results=100
         )
         pdf_urls = [res['secure_url'] for res in resources.get(
-            'resources', []) if res['format'] == 'pdf']
+            'resources', []) if res.get('format') == 'pdf']
         if not pdf_urls:
             raise HTTPException(
                 status_code=404, detail="No PDFs found in this category.")
