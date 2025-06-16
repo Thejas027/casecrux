@@ -33,9 +33,10 @@ async def summarize_category_overall(request: CategoryRequest):
         resources = cloudinary.api.resources(
             type="upload",
             prefix=folder_path,
-            resource_type="raw",
+            resource_type="auto",
             max_results=100
         )
+        print("[Cloudinary Debug] resources:", resources)
         pdf_urls = [res['secure_url'] for res in resources.get(
             'resources', []) if res.get('format') == 'pdf']
         if not pdf_urls:
