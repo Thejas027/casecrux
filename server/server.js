@@ -25,6 +25,10 @@ app.get("/hello", (req, res) => {
 const summarizeRoutes = require("./routes/summarizeRoutes");
 app.use("/api", summarizeRoutes);
 
+// Import and use the new categoryOverall routes
+const categoryOverallRoutes = require("./routes/categoryOverallRoutes");
+app.use("/api", categoryOverallRoutes);
+
 // Test MongoDB insert route
 const Test = mongoose.model("Test", new mongoose.Schema({ name: String }));
 app.post("/test-mongo", async (req, res) => {
