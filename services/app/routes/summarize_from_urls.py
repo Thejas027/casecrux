@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import requests
 from app.services.summarizer import summarize_pdf
 from app.utils.logger import logger
+from app.services.general_overall_summarizer import summarize_general_overall
 
 router = APIRouter()
 
@@ -39,4 +40,6 @@ async def summarize_from_urls(request: UrlsRequest):
             summaries.append({"url": url, "error": str(e)})
     logger.info(
         f"Batch summarize_from_urls completed. Total: {len(request.urls)}")
-    return {"summaries": summaries}
+    # Use new general overall summarizer for a single, simple summary
+    overall = summarize_general_overall(summaries)
+    return {"overall_summary": overall}

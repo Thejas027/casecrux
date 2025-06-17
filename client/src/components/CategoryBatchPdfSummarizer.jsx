@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -8,6 +9,7 @@ function CategoryBatchPdfSummarizer() {
   const [pdfs, setPdfs] = useState([]);
   const [selectedPdfs, setSelectedPdfs] = useState([]);
   const [summaries, setSummaries] = useState([]);
+  const [overallSummary, setOverallSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,6 +20,7 @@ function CategoryBatchPdfSummarizer() {
     setPdfs([]);
     setSelectedPdfs([]);
     setSummaries([]);
+    setOverallSummary(null);
     try {
       const response = await axios.post(
         `${BACKEND_URL}/api/list-uploaded-pdfs-by-category`,
@@ -45,13 +48,18 @@ function CategoryBatchPdfSummarizer() {
     setLoading(true);
     setError("");
     setSummaries([]);
+    setOverallSummary(null);
     try {
       // Use backend proxy to avoid CORS issues
       const response = await axios.post(
         `${BACKEND_URL}/api/ml/summarize_from_urls`,
         { urls: selectedPdfs }
       );
-      setSummaries(response.data.summaries || []);
+      if (response.data && response.data.overall_summary) {
+        setOverallSummary(response.data.overall_summary);
+      } else {
+        setError("No overall summary returned.");
+      }
     } catch (err) {
       setError(err.response?.data?.error || "Failed to summarize PDFs.");
     } finally {
@@ -126,39 +134,47 @@ function CategoryBatchPdfSummarizer() {
           </button>
         </div>
       )}
-      {summaries.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4 text-indigo-700">Summaries</h2>
-          <div className="space-y-6">
-            {summaries.map((item, idx) => (
-              <div
-                key={item.url || idx}
-                className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 shadow"
-              >
-                <div className="font-semibold text-gray-800 mb-2">
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-700 hover:underline"
-                  >
-                    {pdfs.find((p) => p.url === item.url)?.filename || item.url}
-                  </a>
-                </div>
-                {item.summary && (
-                  <div className="text-gray-700 whitespace-pre-line">
-                    {typeof item.summary === "string"
-                      ? item.summary
-                      : JSON.stringify(item.summary, null, 2)}
-                  </div>
-                )}
-                {item.error && (
-                  <div className="text-red-600 font-mono mt-2">
-                    Error: {item.error}
-                  </div>
-                )}
+      {overallSummary && (
+        <div className="mt-8 bg-indigo-50 border-2 border-indigo-300 rounded-xl p-6 shadow-lg">
+          <h2 className="text-2xl font-bold mb-4 text-purple-700 text-center">
+            General Overall Summary
+          </h2>
+          <div className="space-y-4 text-lg">
+            {overallSummary.pros && (
+              <div>
+                <span className="font-semibold text-green-700">Pros:</span>
+                <ul className="list-disc pl-6 mt-1 text-green-900">
+                  {overallSummary.pros.map((pro, idx) => (
+                    <li key={idx}>{pro}</li>
+                  ))}
+                </ul>
               </div>
-            ))}
+            )}
+            {overallSummary.cons && (
+              <div>
+                <span className="font-semibold text-red-700">Cons:</span>
+                <ul className="list-disc pl-6 mt-1 text-red-900">
+                  {overallSummary.cons.map((con, idx) => (
+                    <li key={idx}>{con}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {overallSummary.final_judgment && (
+              <div>
+                <span className="font-semibold text-blue-700">
+                  Final Judgment:
+                </span>
+                <div className="mt-1 text-blue-900">
+                  {overallSummary.final_judgment}
+                </div>
+              </div>
+            )}
+            {overallSummary.raw && (
+              <div className="text-gray-700 whitespace-pre-line">
+                {overallSummary.raw}
+              </div>
+            )}
           </div>
         </div>
       )}
