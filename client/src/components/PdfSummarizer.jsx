@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import './pdfSummarizer.scss';
+import { RiRobot2Fill } from "react-icons/ri";
+import Chatbot from "./Chatbot/Chatbot";
+import { IoClose } from "react-icons/io5";
 
 function PdfSummarizer() {
   const [file, setFile] = useState(null);
@@ -9,6 +13,7 @@ function PdfSummarizer() {
   const [error, setError] = useState("");
   const [allSummaries, setAllSummaries] = useState([]);
   const [overallSummary, setOverallSummary] = useState("");
+  const [isChatbotOpen, setIsChatBotOpen] = useState(false);
   const navigate = useNavigate();
 
   // Fetch all summaries from backend on mount
@@ -25,6 +30,10 @@ function PdfSummarizer() {
       console.log("Failed to fetch summaries:", err.message);
     }
   };
+
+  const handleClickChatBot = () => {
+    setIsChatBotOpen(prev => !prev);
+  }
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -391,6 +400,21 @@ function PdfSummarizer() {
               </pre>
             )}
           </div>
+        )}
+      </div>
+      <div className="chatbotUI">
+        {isChatbotOpen? (<>
+        <span onClick={handleClickChatBot}>
+          <IoClose style ={{borderRadius:'50%',width:'25px',height:'25px'}}/>
+        </span>
+        <div onClick={e => e.stopPropagation()}>
+          <Chatbot />
+        </div>
+        </>
+        ):(   
+        <span onClick={handleClickChatBot}>
+          <RiRobot2Fill/>
+        </span>
         )}
       </div>
     </div>
