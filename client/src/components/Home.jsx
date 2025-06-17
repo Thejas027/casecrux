@@ -37,6 +37,15 @@ function Home() {
               Get an overall summary for all PDFs in a category
             </div>
           </Link>
+          <Link
+            to="/category-batch-pdf-summarizer"
+            className="block bg-gradient-to-r from-pink-500 to-indigo-400 hover:from-pink-600 hover:to-indigo-500 text-white font-bold py-6 px-6 rounded-xl text-center text-xl shadow-lg transition-all duration-200"
+          >
+            Batch PDF Summarizer by Category
+            <div className="text-sm font-normal mt-2 text-pink-100">
+              Select and summarize multiple PDFs in a category
+            </div>
+          </Link>
         </div>
         <div className="mt-8 flex justify-center">
           <button

@@ -7,6 +7,7 @@ import CategoryOverallSummary from "./components/CategoryOverallSummary";
 import CategoryDownloadSummary from "./components/CategoryDownloadSummary";
 import Home from "./components/Home";
 import React from "react";
+import CategoryBatchPdfSummarizer from "./components/CategoryBatchPdfSummarizer";
 
 function App() {
   return (
@@ -53,6 +54,10 @@ function App() {
         <Route
           path="/category-download-summary"
           element={<CategoryDownloadSummary />}
+        />
+        <Route
+          path="/category-batch-pdf-summarizer"
+          element={<CategoryBatchPdfSummarizer />}
         />
       </Routes>
     </BrowserRouter>
