@@ -4,6 +4,7 @@ import SummaryDetail from "./components/SummaryDetail";
 import OverallSummarySidebar from "./components/OverallSummarySidebar";
 import OverallSummaryDetail from "./components/OverallSummaryDetail";
 import CategoryOverallSummary from "./components/CategoryOverallSummary";
+import CategoryDownloadSummary from "./components/CategoryDownloadSummary";
 import Home from "./components/Home";
 import React from "react";
 
@@ -48,6 +49,10 @@ function App() {
         <Route
           path="/category-overall-summary"
           element={<CategoryOverallSummary />}
+        />
+        <Route
+          path="/category-download-summary"
+          element={<CategoryDownloadSummary />}
         />
       </Routes>
     </BrowserRouter>

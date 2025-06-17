@@ -21,13 +21,21 @@ app.get("/hello", (req, res) => {
   res.json({ message: "Hello from backend!" });
 });
 
-// Import and use the new summarize routes
+// Import and use the summarize routes (old features)
 const summarizeRoutes = require("./routes/summarizeRoutes");
 app.use("/api", summarizeRoutes);
 
-// Import and use the new categoryOverall routes
-const categoryOverallRoutes = require("./routes/categoryOverallRoutes");
-app.use("/api", categoryOverallRoutes);
+// Import and use the cloudinaryUpload route (category-based upload)
+const cloudinaryUpload = require("./routes/cloudinaryUpload");
+app.use("/api", cloudinaryUpload);
+
+// Import and use the cloudinaryListFilesByCategory route (list PDFs by category)
+const cloudinaryListFilesByCategory = require("./routes/cloudinaryListFilesByCategory");
+app.use("/api", cloudinaryListFilesByCategory);
+
+// Import and use the listUploadedPdfsByCategory route (list uploaded PDFs by category from MongoDB)
+const listUploadedPdfsByCategory = require("./routes/listUploadedPdfsByCategory");
+app.use("/api", listUploadedPdfsByCategory);
 
 // Test MongoDB insert route
 const Test = mongoose.model("Test", new mongoose.Schema({ name: String }));

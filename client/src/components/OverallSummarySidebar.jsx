@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 function OverallSummarySidebar() {
   const [history, setHistory] = useState([]);
+  const [pdfs, setPdfs] = useState([]);
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     async function fetchHistory() {
@@ -26,6 +29,26 @@ function OverallSummarySidebar() {
     }
     fetchHistory();
   }, []);
+
+  // Fetch PDFs in category if on category summary page
+  useEffect(() => {
+    // Extract category from URL if present
+    if (location.pathname === "/category-overall-summary") {
+      const params = new URLSearchParams(location.search);
+      const cat = params.get("category") || "";
+      setCategory(cat);
+      if (cat) {
+        axios
+          .post(`${BACKEND_URL}/api/list-pdfs-in-category`, { category: cat })
+          .then((res) => setPdfs(res.data.pdfs || []))
+          .catch(() => setPdfs([]));
+      } else {
+        setPdfs([]);
+      }
+    } else {
+      setPdfs([]);
+    }
+  }, [location]);
 
   // Download handler for all PDF summaries in the overall summary
   const handleDownload = async (item) => {
@@ -137,6 +160,27 @@ function OverallSummarySidebar() {
           </li>
         ))}
       </ul>
+      {location.pathname === "/category-overall-summary" && pdfs.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-bold text-[#2cb67d] mb-2">
+            PDFs in Category
+          </h3>
+          <ul className="list-disc pl-6">
+            {pdfs.map((pdf) => (
+              <li key={pdf.public_id}>
+                <a
+                  href={pdf.secure_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 underline"
+                >
+                  {pdf.filename}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </aside>
   );
 }

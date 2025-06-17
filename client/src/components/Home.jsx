@@ -1,7 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Home() {
+  const navigate = useNavigate();
+  const handleListAllPdfs = () => {
+    navigate("/category-download-summary?allpdfs=1");
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-50">
       <div className="bg-white shadow-2xl rounded-2xl p-10 max-w-2xl w-full border-2 border-indigo-200">
@@ -33,6 +37,14 @@ function Home() {
               Get an overall summary for all PDFs in a category
             </div>
           </Link>
+        </div>
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={handleListAllPdfs}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all duration-150"
+          >
+            List ALL PDFs in Cloudinary
+          </button>
         </div>
         <div className="mt-12 text-center text-gray-400 text-xs">
           &copy; {new Date().getFullYear()} CaseCrux. All rights reserved.
