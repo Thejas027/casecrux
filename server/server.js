@@ -49,5 +49,9 @@ app.post("/test-mongo", async (req, res) => {
   }
 });
 
+// Register the ML proxy route
+const mlProxy = require("./routes/mlProxy");
+app.use("/api", mlProxy);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

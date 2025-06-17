@@ -46,8 +46,9 @@ function CategoryBatchPdfSummarizer() {
     setError("");
     setSummaries([]);
     try {
+      // Use backend proxy to avoid CORS issues
       const response = await axios.post(
-        `${BACKEND_URL.replace(/\/$/, "")}/ml/summarize_from_urls`,
+        `${BACKEND_URL}/api/ml/summarize_from_urls`,
         { urls: selectedPdfs }
       );
       setSummaries(response.data.summaries || []);
