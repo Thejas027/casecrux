@@ -29,15 +29,6 @@ function Home() {
             </div>
           </Link>
           <Link
-            to="/category-overall-summary"
-            className="block bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-6 px-6 rounded-xl text-center text-xl shadow-lg transition-all duration-200"
-          >
-            Category Overall Summary
-            <div className="text-sm font-normal mt-2 text-green-100">
-              Get an overall summary for all PDFs in a category
-            </div>
-          </Link>
-          <Link
             to="/category-batch-pdf-summarizer"
             className="block bg-gradient-to-r from-pink-500 to-indigo-400 hover:from-pink-600 hover:to-indigo-500 text-white font-bold py-6 px-6 rounded-xl text-center text-xl shadow-lg transition-all duration-200"
           >
