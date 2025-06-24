@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import axios from "axios";
+import PropTypes from "prop-types";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-function CategoryBatchPdfSummarizer() {
+function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
   const [category, setCategory] = useState("");
   const [pdfs, setPdfs] = useState([]);
   const [selectedPdfs, setSelectedPdfs] = useState([]);
@@ -15,6 +16,7 @@ function CategoryBatchPdfSummarizer() {
   const [selectedLanguage, setSelectedLanguage] = useState("");
   const [translatedSummary, setTranslatedSummary] = useState("");
   const [translating, setTranslating] = useState(false);
+  const [savingToHistory, setSavingToHistory] = useState(false);
 
   const handleListPdfs = async (e) => {
     e.preventDefault();
@@ -43,6 +45,39 @@ function CategoryBatchPdfSummarizer() {
     );
   };
 
+  // Save summary to batch history
+  const saveSummaryToHistory = async (summary) => {
+    setSavingToHistory(true);
+    try {
+      // Collect PDF names and URLs
+      const pdfNames = [];
+      const pdfUrls = [];
+      
+      // Match selected PDFs with their names
+      selectedPdfs.forEach(selectedUrl => {
+        const pdf = pdfs.find(p => p.url === selectedUrl);
+        if (pdf) {
+          pdfNames.push(pdf.filename);
+          pdfUrls.push(pdf.url);
+        }
+      });
+      
+      // Save to backend
+      await axios.post(`${BACKEND_URL}/api/batch-summary-history`, {
+        category,
+        summary,
+        pdfNames,
+        pdfUrls
+      });
+      
+      console.log('Summary saved to history');
+    } catch (err) {
+      console.error('Failed to save summary to history:', err);
+    } finally {
+      setSavingToHistory(false);
+    }
+  };
+
   const handleSummarizeSelected = async () => {
     if (!selectedPdfs.length) {
       setError("Please select at least one PDF to summarize.");
@@ -60,6 +95,13 @@ function CategoryBatchPdfSummarizer() {
       );
       if (response.data && response.data.overall_summary) {
         setOverallSummary(response.data.overall_summary);
+        // Call the callback if provided
+        if (onSummaryUpdate) {
+          onSummaryUpdate(response.data.overall_summary);
+        }
+        
+        // Save summary to history
+        await saveSummaryToHistory(response.data.overall_summary);
       } else {
         setError("No overall summary returned.");
       }
@@ -87,6 +129,10 @@ function CategoryBatchPdfSummarizer() {
         { summary: text, targetLang: selectedLanguage }
       );
       setTranslatedSummary(response.data.translated);
+      // Call the callback if provided
+      if (onTranslationUpdate) {
+        onTranslationUpdate(response.data.translated, selectedLanguage);
+      }
     } catch (err) {
       setError(err.response?.data?.error || "Failed to translate summary.");
     } finally {
@@ -155,9 +201,9 @@ function CategoryBatchPdfSummarizer() {
           <button
             onClick={handleSummarizeSelected}
             className="mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-purple-700 transition-all duration-150 w-full"
-            disabled={loading}
+            disabled={loading || savingToHistory}
           >
-            Summarize Selected PDFs
+            {loading ? "Summarizing..." : savingToHistory ? "Saving Summary..." : "Summarize Selected PDFs"}
           </button>
         </div>
       )}
@@ -243,8 +289,17 @@ function CategoryBatchPdfSummarizer() {
           </div>
         </div>
       )}
-    </div>
-  );
+    </div>  );
 }
+
+CategoryBatchPdfSummarizer.propTypes = {
+  onSummaryUpdate: PropTypes.func,
+  onTranslationUpdate: PropTypes.func
+};
+
+CategoryBatchPdfSummarizer.defaultProps = {
+  onSummaryUpdate: null,
+  onTranslationUpdate: null
+};
 
 export default CategoryBatchPdfSummarizer;

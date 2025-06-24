@@ -57,5 +57,9 @@ app.use("/api", mlProxy);
 const translateSummary = require("./routes/translateSummary");
 app.use("/api", translateSummary);
 
+// Register the batch summary history API route
+const batchSummaryHistory = require("./routes/batchSummaryHistory");
+app.use("/api", batchSummaryHistory);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

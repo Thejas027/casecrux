@@ -7,6 +7,9 @@ import CategoryDownloadSummary from "./components/CategoryDownloadSummary";
 import Home from "./components/Home";
 import React from "react";
 import CategoryBatchPdfSummarizer from "./components/CategoryBatchPdfSummarizer";
+import CategoryBatchWithTranslationHistory from "./components/CategoryBatchWithTranslationHistory";
+import BatchSummaryHistorySidebar from "./components/BatchSummaryHistorySidebar";
+import BatchSummaryDetail from "./components/BatchSummaryDetail";
 
 function App() {
   return (
@@ -52,7 +55,18 @@ function App() {
         />
         <Route
           path="/category-batch-pdf-summarizer"
-          element={<CategoryBatchPdfSummarizer />}
+          element={<CategoryBatchWithTranslationHistory />}
+        />
+        <Route
+          path="/batch-summary/:id"
+          element={
+            <div className="flex min-h-screen">
+              <BatchSummaryHistorySidebar />
+              <div className="flex-1">
+                <BatchSummaryDetail />
+              </div>
+            </div>
+          }
         />
       </Routes>
     </BrowserRouter>
