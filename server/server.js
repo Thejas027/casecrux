@@ -53,5 +53,9 @@ app.post("/test-mongo", async (req, res) => {
 const mlProxy = require("./routes/mlProxy");
 app.use("/api", mlProxy);
 
+// Register the translate-summary API route
+const translateSummary = require("./routes/translateSummary");
+app.use("/api", translateSummary);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

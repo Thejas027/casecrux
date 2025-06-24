@@ -12,6 +12,9 @@ function CategoryBatchPdfSummarizer() {
   const [overallSummary, setOverallSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [translatedSummary, setTranslatedSummary] = useState("");
+  const [translating, setTranslating] = useState(false);
 
   const handleListPdfs = async (e) => {
     e.preventDefault();
@@ -64,6 +67,30 @@ function CategoryBatchPdfSummarizer() {
       setError(err.response?.data?.error || "Failed to summarize PDFs.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTranslate = async () => {
+    if (!overallSummary) return;
+    setTranslating(true);
+    setTranslatedSummary("");
+    setError("");
+    try {
+      // Combine the summary fields into a single string for translation
+      let text = "";
+      if (overallSummary.pros) text += `Pros:\n${overallSummary.pros.join("\n")}`;
+      if (overallSummary.cons) text += `\n\nCons:\n${overallSummary.cons.join("\n")}`;
+      if (overallSummary.final_judgment) text += `\n\nFinal Judgment:\n${overallSummary.final_judgment}`;
+      if (overallSummary.raw) text += `\n${overallSummary.raw}`;
+      const response = await axios.post(
+        `${BACKEND_URL}/api/translate-summary`,
+        { summary: text, targetLang: selectedLanguage }
+      );
+      setTranslatedSummary(response.data.translated);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to translate summary.");
+    } finally {
+      setTranslating(false);
     }
   };
 
@@ -140,39 +167,77 @@ function CategoryBatchPdfSummarizer() {
             General Overall Summary
           </h2>
           <div className="space-y-4 text-lg">
-            {overallSummary.pros && (
-              <div>
-                <span className="font-semibold text-green-700">Pros:</span>
-                <ul className="list-disc pl-6 mt-1 text-green-900">
-                  {overallSummary.pros.map((pro, idx) => (
-                    <li key={idx}>{pro}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {overallSummary.cons && (
-              <div>
-                <span className="font-semibold text-red-700">Cons:</span>
-                <ul className="list-disc pl-6 mt-1 text-red-900">
-                  {overallSummary.cons.map((con, idx) => (
-                    <li key={idx}>{con}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {overallSummary.final_judgment && (
-              <div>
-                <span className="font-semibold text-blue-700">
-                  Final Judgment:
-                </span>
-                <div className="mt-1 text-blue-900">
-                  {overallSummary.final_judgment}
+            {/* Language selector and translate button */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+              <select
+                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                value={selectedLanguage}
+                onChange={e => setSelectedLanguage(e.target.value)}
+              >
+                <option value="">Select language</option>
+                <option value="hi">Hindi</option>
+                <option value="kn">Kannada</option>
+                <option value="fr">French</option>
+                <option value="es">Spanish</option>
+                <option value="de">German</option>
+                <option value="ta">Tamil</option>
+                <option value="te">Telugu</option>
+                <option value="ml">Malayalam</option>
+                <option value="gu">Gujarati</option>
+                <option value="mr">Marathi</option>
+                {/* Add more as needed */}
+              </select>
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all duration-150"
+                onClick={handleTranslate}
+                disabled={!selectedLanguage || translating}
+              >
+                {translating ? "Translating..." : "Translate"}
+              </button>
+            </div>
+            {/* English summary */}
+            <div>
+              {overallSummary.pros && (
+                <div>
+                  <span className="font-semibold text-green-700">Pros:</span>
+                  <ul className="list-disc pl-6 mt-1 text-green-900">
+                    {overallSummary.pros.map((pro, idx) => (
+                      <li key={idx}>{pro}</li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
-            )}
-            {overallSummary.raw && (
-              <div className="text-gray-700 whitespace-pre-line">
-                {overallSummary.raw}
+              )}
+              {overallSummary.cons && (
+                <div>
+                  <span className="font-semibold text-red-700">Cons:</span>
+                  <ul className="list-disc pl-6 mt-1 text-red-900">
+                    {overallSummary.cons.map((con, idx) => (
+                      <li key={idx}>{con}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {overallSummary.final_judgment && (
+                <div>
+                  <span className="font-semibold text-blue-700">
+                    Final Judgment:
+                  </span>
+                  <div className="mt-1 text-blue-900">
+                    {overallSummary.final_judgment}
+                  </div>
+                </div>
+              )}
+              {overallSummary.raw && (
+                <div className="text-gray-700 whitespace-pre-line">
+                  {overallSummary.raw}
+                </div>
+              )}
+            </div>
+            {/* Translated summary */}
+            {translatedSummary && (
+              <div className="mt-6 bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                <h3 className="text-lg font-bold mb-2 text-yellow-700">Translated Summary</h3>
+                <div className="whitespace-pre-line text-gray-900">{translatedSummary}</div>
               </div>
             )}
           </div>
