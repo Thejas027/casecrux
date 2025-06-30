@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ButtonSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -68,7 +69,7 @@ function CategoryOverallSummary() {
           className="bg-indigo-600 text-white px-4 py-2 rounded"
           disabled={loading || !category}
         >
-          {loading ? "Loading..." : "Show PDFs"}
+          {loading ? <ButtonSpinner text="Loading..." /> : "Show PDFs"}
         </button>
       </form>
       {error && <div className="text-red-500 mb-4">{error}</div>}
@@ -94,7 +95,7 @@ function CategoryOverallSummary() {
             className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
             disabled={loading}
           >
-            {loading ? "Summarizing..." : "Summarize All"}
+            {loading ? <ButtonSpinner text="Summarizing..." /> : "Summarize All"}
           </button>
         </div>
       )}

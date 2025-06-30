@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { InlineSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -106,7 +107,7 @@ function BatchSummaryHistorySidebar() {
         Batch Summary History
       </h2>
       
-      {loading && <div className="text-[#e0e7ef]">Loading history...</div>}
+      {loading && <InlineSpinner text="Loading history..." />}
       {error && <div className="text-red-400">{error}</div>}
       
       {!loading && !error && history.length === 0 && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ButtonSpinner, InlineSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -11,6 +12,8 @@ function PdfSummarizer() {
   const [error, setError] = useState("");
   const [allSummaries, setAllSummaries] = useState([]);
   const [overallSummary, setOverallSummary] = useState("");
+  const [fetchingOverallSummary, setFetchingOverallSummary] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
 
   // Fetch all summaries from backend on mount
@@ -103,6 +106,7 @@ function PdfSummarizer() {
 
   // Request overall summary from backend
   const handleOverallSummary = async () => {
+    setFetchingOverallSummary(true);
     setOverallSummary("");
     setError("");
     try {
@@ -111,6 +115,8 @@ function PdfSummarizer() {
     } catch (err) {
       setError("Failed to get overall summary.");
       console.error("Error fetching overall summary:", err.message);
+    } finally {
+      setFetchingOverallSummary(false);
     }
   };
 
@@ -118,6 +124,7 @@ function PdfSummarizer() {
     if (!window.confirm(`Are you sure you want to delete this summary?`)) {
       return;
     }
+    setDeletingId(id);
     try {
       await axios.delete(`${BACKEND_URL}/api/summaries/${id}`);
       setAllSummaries((prev) => prev.filter((s) => s._id !== id));
@@ -127,6 +134,8 @@ function PdfSummarizer() {
     } catch (err) {
       setError("Failed to delete summary. Please try again.");
       console.error("Error deleting summary:", err.message);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -164,10 +173,11 @@ function PdfSummarizer() {
             <button
               type="submit"
               disabled={isLoading || !file}
-              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer ${
+              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer flex items-center gap-2 ${
                 isLoading || !file ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
+              {isLoading && <ButtonSpinner />}
               {isLoading ? "Summarizing..." : "Summarize"}
             </button>
           </div>
@@ -271,9 +281,13 @@ function PdfSummarizer() {
                       </button>
                       <button
                         onClick={() => handleDeleteSummary(s._id)}
-                        className="text-xs bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon transition-colors duration-150 cursor-pointer"
+                        disabled={deletingId === s._id}
+                        className={`text-xs bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon transition-colors duration-150 cursor-pointer flex items-center gap-1 ${
+                          deletingId === s._id ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                       >
-                        Delete
+                        {deletingId === s._id && <ButtonSpinner size="small" />}
+                        {deletingId === s._id ? "Deleting..." : "Delete"}
                       </button>
                       <button
                         title="Download PDF Summary"
@@ -318,12 +332,19 @@ function PdfSummarizer() {
           <div className="flex justify-center mt-8">
             <button
               onClick={handleOverallSummary}
-              className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer"
+              disabled={fetchingOverallSummary}
+              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer flex items-center gap-2 ${
+                fetchingOverallSummary ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              Get Overall Summary
+              {fetchingOverallSummary && <ButtonSpinner />}
+              {fetchingOverallSummary ? "Getting Summary..." : "Get Overall Summary"}
             </button>
           </div>
         </div>
+        {fetchingOverallSummary && (
+          <InlineSpinner text="Generating overall summary..." className="mt-4" />
+        )}
         {overallSummary && (
           <div className="mt-8 bg-[#23272f] border border-[#2cb67d] rounded-xl px-8 pt-6 pb-8">
             <h2

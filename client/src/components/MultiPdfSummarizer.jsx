@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { ButtonSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -118,10 +119,7 @@ function MultiPdfSummarizer() {
               }`}
             >
               {isLoading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#18181b] mr-2"></div>
-                  Summarizing...
-                </div>
+                <ButtonSpinner text="Summarizing..." />
               ) : (
                 "Summarize All"
               )}

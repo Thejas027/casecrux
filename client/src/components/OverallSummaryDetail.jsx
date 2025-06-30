@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
+import { InlineSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -58,7 +59,7 @@ function OverallSummaryDetail() {
   );
 
   if (!id) return null;
-  if (loading) return <div className="p-8 text-[#e0e7ef]">Loading...</div>;
+  if (loading) return <InlineSpinner text="Loading summary..." />;
   if (error) return <div className="p-8 text-red-400">{error}</div>;
   if (!summary) return null;
 

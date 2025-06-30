@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { FullPageSpinner, ButtonSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -125,11 +126,7 @@ function BatchSummaryDetail() {
   }, [summary, selectedLanguage]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef] p-8 text-center">
-        <div className="text-lg">Loading summary...</div>
-      </div>
-    );
+    return <FullPageSpinner text="Loading summary..." />;
   }
 
   if (error) {
@@ -275,10 +272,7 @@ function BatchSummaryDetail() {
                   disabled={!selectedLanguage || translating}
                 >
                   {translating ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#18181b] mr-2"></div>
-                      Translating...
-                    </div>
+                    <ButtonSpinner text="Translating..." />
                   ) : (
                     `Translate to ${selectedLanguage ? getLanguageName(selectedLanguage) : ''}`
                   )}

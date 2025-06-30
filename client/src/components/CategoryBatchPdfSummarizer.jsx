@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
+import { ButtonSpinner, InlineSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -234,10 +235,11 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
             <button
               type="submit"
               disabled={loading}
-              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer ${
+              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer flex items-center gap-2 ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
+              {loading && <ButtonSpinner />}
               {loading ? "Loading PDFs..." : "List PDFs"}
             </button>
           </div>
@@ -290,10 +292,11 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
             <button
               onClick={handleSummarizeSelected}
               disabled={loading || savingToHistory || selectedPdfs.length === 0}
-              className={`w-full bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 ${
+              className={`w-full bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 flex items-center justify-center gap-2 ${
                 loading || savingToHistory || selectedPdfs.length === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               }`}
             >
+              {(loading || savingToHistory) && <ButtonSpinner />}
               {loading 
                 ? "Summarizing..." 
                 : savingToHistory 
@@ -430,23 +433,14 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
                 </div>
                 <div>
                   <button
-                    className={`bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-200 ${
+                    className={`bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-200 flex items-center gap-2 ${
                       !selectedLanguage || translating ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                     }`}
                     onClick={handleTranslate}
                     disabled={!selectedLanguage || translating}
                   >
-                    {translating ? (
-                      <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Translating...
-                      </span>
-                    ) : (
-                      'Translate Summary'
-                    )}
+                    {translating && <ButtonSpinner />}
+                    {translating ? "Translating..." : "Translate Summary"}
                   </button>
                 </div>
               </div>

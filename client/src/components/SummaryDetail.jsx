@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import { FullPageSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -50,7 +51,7 @@ function SummaryDetail() {
   );
 
   if (loading)
-    return <div className="text-center text-lg mt-8">Loading...</div>;
+    return <FullPageSpinner text="Loading summary..." />;
   if (error)
     return <div className="text-center text-red-400 mt-8">{error}</div>;
   if (!summary) return null;

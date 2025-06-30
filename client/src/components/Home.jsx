@@ -3,51 +3,139 @@ import { Link, useNavigate } from "react-router-dom";
 
 function Home() {
   const navigate = useNavigate();
-  const handleListAllPdfs = () => {
-    navigate("/category-download-summary?allpdfs=1");
+  
+  const handleUploadPdf = () => {
+    navigate("/category-download-summary");
   };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b]">
-      <div className="bg-[#23272f] shadow-2xl rounded-2xl p-10 max-w-2xl w-full border-2 border-[#7f5af0]">
-        <h1 className="text-5xl font-extrabold text-center mb-8 text-white drop-shadow-lg tracking-wider">
-          Welcome to{" "}
-          <span className="text-[#7f5af0]" style={{ fontWeight: "bold" }}>
-            CaseCrux
-          </span>
-        </h1>
-        <p className="text-center text-lg text-[#e0e7ef] mb-10">
-          Your one-stop solution for legal PDF summarization and case analysis.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#18181b] to-[#1e1b4b]">
+      {/* Upload button in top right corner */}
+      <div className="absolute top-6 right-6 z-20">
+        <button
+          onClick={handleUploadPdf}
+          className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] text-[#18181b] px-6 py-3 rounded-xl font-semibold"
+        >
+          Upload PDF
+        </button>
+      </div>
+
+      {/* Main content - full width */}
+      <div className="min-h-screen px-8 py-16">
+        {/* Header Section */}
+        <div className="text-center mb-16">
+          <div className="flex justify-center items-center mb-8">
+            <div className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] p-4 rounded-2xl">
+              <svg className="w-12 h-12 text-[#18181b]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+          <h1 className="text-6xl font-black text-center mb-6 bg-gradient-to-r from-white via-[#e0e7ef] to-[#7f5af0] bg-clip-text text-transparent">
+            Welcome to{" "}
+            <span className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] bg-clip-text text-transparent">
+              CaseCrux
+            </span>
+          </h1>
+          <div className="h-1 w-32 bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] mx-auto rounded-full mb-8"></div>
+          <p className="text-center text-xl text-[#e0e7ef]/80 mb-4 max-w-3xl mx-auto">
+            Your intelligent companion for legal PDF analysis and case summarization
+          </p>
+          <p className="text-center text-sm text-[#a786df]/60 max-w-2xl mx-auto">
+            Powered by advanced AI to transform complex legal documents into clear, actionable insights
+          </p>
+        </div>
+        
+        {/* Features Grid - full width */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 max-w-6xl mx-auto">
           <Link
             to="/pdf-summarizer"
-            className="block bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#2cb67d] hover:to-[#7f5af0] text-[#18181b] font-bold py-6 px-6 rounded-xl text-center text-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+            className="bg-gradient-to-br from-[#7f5af0]/10 to-[#2cb67d]/10 border border-[#7f5af0]/30 rounded-2xl p-8"
           >
-            Single PDF Summarizer
-            <div className="text-sm font-normal mt-2 text-[#18181b]/80">
-              Upload and summarize a single legal PDF
+            <div className="mb-6">
+              <div className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-[#18181b]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Single PDF Summarizer
+              </h3>
+              <p className="text-[#e0e7ef]/70 text-sm leading-relaxed">
+                Upload and get instant AI-powered summaries of individual legal documents with key insights and analysis
+              </p>
+            </div>
+            <div className="flex items-center text-[#7f5af0] text-sm font-medium">
+              Get Started
+              <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+              </svg>
             </div>
           </Link>
+          
           <Link
             to="/category-batch-pdf-summarizer"
-            className="block bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-[#18181b] font-bold py-6 px-6 rounded-xl text-center text-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+            className="bg-gradient-to-br from-[#2cb67d]/10 to-[#7f5af0]/10 border border-[#2cb67d]/30 rounded-2xl p-8"
           >
-            Batch PDF Summarizer by Category
-            <div className="text-sm font-normal mt-2 text-[#18181b]/80">
-              Select and summarize multiple PDFs in a category
+            <div className="mb-6">
+              <div className="bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-[#18181b]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Batch PDF Summarizer
+              </h3>
+              <p className="text-[#e0e7ef]/70 text-sm leading-relaxed">
+                Process multiple documents by category with comprehensive analysis, pros/cons evaluation, and final judgments
+              </p>
+            </div>
+            <div className="flex items-center text-[#2cb67d] text-sm font-medium">
+              Get Started
+              <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+              </svg>
             </div>
           </Link>
         </div>
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={handleListAllPdfs}
-            className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#2cb67d] hover:to-[#7f5af0] text-[#18181b] px-8 py-3 rounded-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105"
-          >
-            List ALL PDFs in Cloudinary
-          </button>
+        
+        {/* Features highlights */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 max-w-4xl mx-auto">
+          <div className="text-center p-6 rounded-xl bg-[#7f5af0]/5 border border-[#7f5af0]/20">
+            <div className="w-12 h-12 bg-[#7f5af0]/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-[#7f5af0]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <h4 className="text-lg font-semibold text-[#7f5af0] mb-2">AI-Powered</h4>
+            <p className="text-sm text-[#e0e7ef]/60">Advanced algorithms</p>
+          </div>
+          <div className="text-center p-6 rounded-xl bg-[#2cb67d]/5 border border-[#2cb67d]/20">
+            <div className="w-12 h-12 bg-[#2cb67d]/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-[#2cb67d]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <h4 className="text-lg font-semibold text-[#2cb67d] mb-2">Secure</h4>
+            <p className="text-sm text-[#e0e7ef]/60">Privacy protected</p>
+          </div>
+          <div className="text-center p-6 rounded-xl bg-[#7f5af0]/5 border border-[#7f5af0]/20">
+            <div className="w-12 h-12 bg-[#7f5af0]/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-[#7f5af0]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <h4 className="text-lg font-semibold text-[#7f5af0] mb-2">Fast</h4>
+            <p className="text-sm text-[#e0e7ef]/60">Instant results</p>
+          </div>
         </div>
-        <div className="mt-12 text-center text-[#a786df] text-xs">
-          &copy; {new Date().getFullYear()} CaseCrux. All rights reserved.
+        
+        {/* Footer */}
+        <div className="text-center">
+          <div className="h-px bg-gradient-to-r from-transparent via-[#7f5af0]/30 to-transparent mb-6"></div>
+          <p className="text-[#a786df]/60 text-sm">
+            &copy; {new Date().getFullYear()} CaseCrux. Transforming legal analysis with AI.
+          </p>
         </div>
       </div>
     </div>

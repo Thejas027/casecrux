@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
+import { InlineSpinner } from "./Spinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -102,7 +103,7 @@ function OverallSummarySidebar() {
       <h2 className="text-xl font-bold mb-4 text-[#7f5af0]">
         Overall Summary History
       </h2>
-      {loading && <div className="text-[#e0e7ef]">Loading...</div>}
+      {loading && <InlineSpinner text="Loading..." />}
       {error && <div className="text-red-400">{error}</div>}
       <ul className="flex-1 overflow-y-auto space-y-2">
         {history.map((item) => (
