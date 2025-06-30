@@ -92,31 +92,43 @@ function splitTextIntoChunks(text, maxLength) {
 async function translateChunk(text, targetLang, normalizedLang) {
   // Try multiple LibreTranslate instances in case one is down
   const libreTranlateInstances = [
-    "https://translate.argosopentech.com/translate",
-    "https://translate.terraprint.co/translate", 
-    "https://libretranslate.de/translate"
+    "https://translate.argosopentech.com",
+    "https://translate.terraprint.co", 
+    "https://libretranslate.de"
   ];
   
   // Try each instance until one works
-  let translationSuccess = false;
   let lastError;
   
   // STEP 1: Try LibreTranslate instances first
-  for (const apiUrl of libreTranlateInstances) {
+  for (const baseUrl of libreTranlateInstances) {
     try {
-      const response = await axios.post(apiUrl, {
+      console.log(`Trying LibreTranslate instance: ${baseUrl}`);
+      
+      const response = await axios.post(`${baseUrl}/translate`, {
         q: text,
         source: "auto",  // Auto-detect source language
         target: normalizedLang,
         format: "text"
+      }, {
+        timeout: 30000, // 30 second timeout
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
+      console.log(`Translation successful with ${baseUrl}`);
+      
       // If we get here, translation worked
-      return response.data.translatedText;
+      if (response.data && response.data.translatedText) {
+        return response.data.translatedText;
+      } else {
+        throw new Error("Invalid response format from LibreTranslate");
+      }
     } catch (err) {
       // Save error and try next server
       lastError = err;
-      console.log(`Translation failed with ${apiUrl}, trying next server...`);
+      console.log(`Translation failed with ${baseUrl}, error: ${err.message}`);
     }
   }
   
@@ -124,11 +136,22 @@ async function translateChunk(text, targetLang, normalizedLang) {
   console.log("All LibreTranslate servers failed for chunk, trying MyMemory API...");
   try {
     // Use original target language for MyMemory since it supports more languages
-    const myMemoryUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
-    const response = await axios.get(myMemoryUrl);
+    const myMemoryUrl = `https://api.mymemory.translated.net/get`;
+    const response = await axios.get(myMemoryUrl, {
+      params: {
+        q: text,
+        langpair: `en|${targetLang}`,
+        de: "your-email@example.com" // MyMemory requires an email
+      },
+      timeout: 30000
+    });
+    
+    console.log("MyMemory response:", response.data);
     
     if (response.data && response.data.responseData && response.data.responseData.translatedText) {
       return response.data.responseData.translatedText;
+    } else {
+      throw new Error("Invalid response from MyMemory API");
     }
   } catch (err) {
     console.log("MyMemory API also failed for chunk:", err.message);
@@ -138,14 +161,23 @@ async function translateChunk(text, targetLang, normalizedLang) {
   throw lastError || new Error("All translation services failed for this chunk");
 }
 
-router.post("/translate-summary", async (req, res) => {
+router.post("/", async (req, res) => {
+  console.log("Translation request received:", req.body);
+  
   const { summary, targetLang } = req.body;
   if (!summary || !targetLang) {
-    return res.status(400).json({ error: "Missing summary or targetLang" });
+    console.log("Missing required fields:", { summary: !!summary, targetLang: !!targetLang });
+    return res.status(400).json({ 
+      error: "Missing required fields", 
+      details: "Both summary and targetLang are required" 
+    });
   }
+  
+  console.log(`Starting translation to ${targetLang}, text length: ${summary.length}`);
   
   // Convert language code if needed for LibreTranslate
   const normalizedLang = LANGUAGE_MAPPING[targetLang] || targetLang;
+  console.log(`Using normalized language: ${normalizedLang}`);
   
   try {
     // Split text into manageable chunks
@@ -164,12 +196,23 @@ router.post("/translate-summary", async (req, res) => {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
-      // Combine the translated chunks
+    
+    // Combine the translated chunks
     const translatedText = translatedChunks.join(' ');
-    return res.json({ translated: translatedText });
+    console.log(`Translation completed. Original length: ${summary.length}, Translated length: ${translatedText.length}`);
+    
+    return res.json({ 
+      translated: translatedText,
+      originalLength: summary.length,
+      translatedLength: translatedText.length,
+      chunksProcessed: chunks.length
+    });
   } catch (error) {
     console.error("Translation error:", error.response?.data || error.message);
-    res.status(500).json({ error: "Translation failed", details: error.response?.data?.error || error.message });
+    res.status(500).json({ 
+      error: "Translation failed", 
+      details: error.response?.data?.error || error.message 
+    });
   }
 });
 

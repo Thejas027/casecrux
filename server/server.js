@@ -55,7 +55,7 @@ app.use("/api", mlProxy);
 
 // Register the translate-summary API route
 const translateSummary = require("./routes/translateSummary");
-app.use("/api", translateSummary);
+app.use("/api/translate-summary", translateSummary);
 
 // Register the batch summary history API route
 const batchSummaryHistory = require("./routes/batchSummaryHistory");
