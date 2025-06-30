@@ -192,89 +192,217 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow-lg mt-8 border border-indigo-100">
-      <h1 className="text-3xl font-bold mb-6 text-indigo-700 text-center drop-shadow">
-        Batch PDF Summarizer by Category
-      </h1>
-      <form
-        onSubmit={handleListPdfs}
-        className="flex gap-4 mb-6 justify-center"
-      >
-        <input
-          type="text"
-          className="border rounded-lg px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          placeholder="Enter category name"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
-        />
-        <button
-          type="submit"
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-indigo-700 transition-all duration-150"
+    <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef] py-8 px-2">
+      <div className="max-w-3xl mx-auto">
+        <h1
+          className="text-5xl font-extrabold text-center mb-8 tracking-wider"
+          style={{
+            color: "#ffffff",
+          }}
         >
-          List PDFs
-        </button>
-      </form>
-      {loading && <div className="text-center text-indigo-500">Loading...</div>}
-      {error && <div className="text-center text-red-500 mb-4">{error}</div>}
-      {pdfs.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2 text-gray-700">
-            Select PDFs to Summarize:
+          CaseCrux
+        </h1>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold" style={{ color: "#7f5af0" }}>
+            Batch PDF Summarizer by Category
           </h2>
-          <ul className="divide-y divide-gray-200 bg-gray-50 rounded-lg">
-            {pdfs.map((pdf) => (
-              <li key={pdf.public_id} className="flex items-center px-4 py-2">
-                <input
-                  type="checkbox"
-                  className="mr-3 accent-indigo-600"
-                  checked={selectedPdfs.includes(pdf.url)}
-                  onChange={() => handleSelectPdf(pdf.url)}
-                  id={pdf.public_id}
-                />
-                <label
-                  htmlFor={pdf.public_id}
-                  className="flex-1 cursor-pointer text-gray-800"
-                >
-                  {pdf.filename}
-                </label>
-                <a
-                  href={pdf.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-4 text-blue-600 hover:underline text-sm"
-                >
-                  View
-                </a>
-              </li>
-            ))}
-          </ul>
-          <button
-            onClick={handleSummarizeSelected}
-            className="mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-purple-700 transition-all duration-150 w-full"
-            disabled={loading || savingToHistory}
-          >
-            {loading ? "Summarizing..." : savingToHistory ? "Saving Summary..." : "Summarize Selected PDFs"}
-          </button>
         </div>
-      )}
-      {overallSummary && (
-        <div className="mt-8 bg-indigo-50 border-2 border-indigo-300 rounded-xl p-6 shadow-lg">
-          <h2 className="text-2xl font-bold mb-4 text-purple-700 text-center">
-            General Overall Summary
-          </h2>
-          <div className="space-y-4 text-lg">
-            {/* Language selector and translate button */}
-            <div className="bg-white border-2 border-blue-200 rounded-xl p-4 mb-4">
-              <h3 className="text-lg font-semibold text-blue-700 mb-3">Translation</h3>
-              <div className="flex flex-col sm:flex-row items-center gap-4">
+        
+        {/* Category Input Form */}
+        <form
+          onSubmit={handleListPdfs}
+          className="bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 mb-8 border-2 border-[#7f5af0]"
+        >
+          <div className="mb-6">
+            <label
+              htmlFor="category-input"
+              className="block text-[#7f5af0] text-lg font-bold mb-2"
+            >
+              Category Name:
+            </label>
+            <input
+              id="category-input"
+              type="text"
+              placeholder="Enter category name"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="shadow appearance-none border border-[#7f5af0] rounded w-full py-2 px-3 bg-[#18181b] text-[#e0e7ef] leading-tight focus:outline-none focus:ring-2 focus:ring-[#7f5af0] text-lg"
+              required
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <button
+              type="submit"
+              disabled={loading}
+              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 cursor-pointer ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {loading ? "Loading PDFs..." : "List PDFs"}
+            </button>
+          </div>
+        </form>
+
+        {/* Error Display */}
+        {error && (
+          <div
+            className="bg-[#2cb67d] border border-[#7f5af0] text-[#18181b] px-4 py-3 rounded relative mb-4 text-lg"
+            role="alert"
+          >
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
+        {/* PDF Selection */}
+        {pdfs.length > 0 && (
+          <div className="bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 mb-8 border-2 border-[#2cb67d]">
+            <h3 className="text-2xl font-bold mb-6" style={{ color: "#2cb67d" }}>
+              Select PDFs to Summarize:
+            </h3>
+            <div className="space-y-3 mb-6">
+              {pdfs.map((pdf) => (
+                <div key={pdf.public_id} className="bg-[#18181b] border border-[#7f5af0] rounded-lg p-4 flex items-center">
+                  <input
+                    type="checkbox"
+                    className="mr-4 w-5 h-5 text-[#7f5af0] bg-[#18181b] border-[#7f5af0] rounded focus:ring-[#7f5af0] focus:ring-2"
+                    checked={selectedPdfs.includes(pdf.url)}
+                    onChange={() => handleSelectPdf(pdf.url)}
+                    id={pdf.public_id}
+                  />
+                  <label
+                    htmlFor={pdf.public_id}
+                    className="flex-1 cursor-pointer text-[#e0e7ef] text-lg"
+                  >
+                    {pdf.filename}
+                  </label>
+                  <a
+                    href={pdf.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-4 text-[#7f5af0] hover:text-[#2cb67d] text-sm underline transition-colors duration-150"
+                  >
+                    View PDF
+                  </a>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={handleSummarizeSelected}
+              disabled={loading || savingToHistory || selectedPdfs.length === 0}
+              className={`w-full bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#a786df] hover:to-[#7f5af0] text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 ${
+                loading || savingToHistory || selectedPdfs.length === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              }`}
+            >
+              {loading 
+                ? "Summarizing..." 
+                : savingToHistory 
+                  ? "Saving Summary..." 
+                  : "Summarize Selected PDFs"
+              }
+            </button>
+          </div>
+        )}
+
+        {/* Summary Display */}
+        {overallSummary && (
+          <div className="bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 mb-8 border-2 border-[#7f5af0]">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold" style={{ color: "#7f5af0" }}>
+                General Overall Summary
+              </h3>
+              <button
+                onClick={() => {
+                  let content = `Category: ${category}\n\n`;
+                  if (overallSummary.pros) content += `Pros:\n${overallSummary.pros.join("\n")}\n\n`;
+                  if (overallSummary.cons) content += `Cons:\n${overallSummary.cons.join("\n")}\n\n`;
+                  if (overallSummary.final_judgment) content += `Final Judgment:\n${overallSummary.final_judgment}\n\n`;
+                  if (overallSummary.raw) content += `Raw Summary:\n${overallSummary.raw}`;
+                  
+                  const blob = new Blob([content], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `batch-summary-${category}.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="bg-[#2cb67d] hover:bg-[#7f5af0] text-[#18181b] font-bold py-1 px-4 rounded-lg text-sm"
+                title="Download Summary"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z" />
+                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Original Summary Content */}
+            <div className="bg-[#18181b] border border-[#7f5af0] rounded-lg p-6 mb-6">
+              <h4 className="text-lg font-semibold mb-4" style={{ color: "#7f5af0" }}>
+                Original Summary (English)
+              </h4>
+              <div className="space-y-4 text-[#e0e7ef]">
+                {overallSummary.pros && (
+                  <div>
+                    <span className="font-semibold" style={{ color: "#2cb67d" }}>Pros:</span>
+                    <ul className="list-disc pl-6 mt-2 space-y-1">
+                      {overallSummary.pros.map((pro, idx) => (
+                        <li key={idx} className="text-[#e0e7ef]">{pro}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {overallSummary.cons && (
+                  <div>
+                    <span className="font-semibold text-red-400">Cons:</span>
+                    <ul className="list-disc pl-6 mt-2 space-y-1">
+                      {overallSummary.cons.map((con, idx) => (
+                        <li key={idx} className="text-[#e0e7ef]">{con}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {overallSummary.final_judgment && (
+                  <div>
+                    <span className="font-semibold" style={{ color: "#7f5af0" }}>
+                      Final Judgment:
+                    </span>
+                    <div className="mt-2 text-[#e0e7ef]">
+                      {overallSummary.final_judgment}
+                    </div>
+                  </div>
+                )}
+                
+                {overallSummary.raw && (
+                  <div className="text-[#e0e7ef] whitespace-pre-line">
+                    {overallSummary.raw}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Translation Section */}
+            <div className="bg-[#18181b] border border-[#2cb67d] rounded-lg p-6">
+              <h4 className="text-lg font-semibold mb-4" style={{ color: "#2cb67d" }}>
+                Translation
+              </h4>
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 mb-4">
                 <div className="flex-1">
-                  <label htmlFor="languageSelect" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="languageSelect" className="block text-sm font-medium text-[#e0e7ef] mb-2">
                     Select Target Language:
                   </label>
                   <select
                     id="languageSelect"
-                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="shadow appearance-none border border-[#7f5af0] rounded w-full py-2 px-3 bg-[#23272f] text-[#e0e7ef] leading-tight focus:outline-none focus:ring-2 focus:ring-[#7f5af0]"
                     value={selectedLanguage}
                     onChange={e => setSelectedLanguage(e.target.value)}
                   >
@@ -300,9 +428,11 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
                     <option value="ar">Arabic (العربية)</option>
                   </select>
                 </div>
-                <div className="flex items-end">
+                <div>
                   <button
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className={`bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-200 ${
+                      !selectedLanguage || translating ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                    }`}
                     onClick={handleTranslate}
                     disabled={!selectedLanguage || translating}
                   >
@@ -323,69 +453,30 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
               
               {/* Translation Error */}
               {error && error.includes("translate") && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 text-sm">{error}</p>
+                <div className="bg-red-500 border border-red-400 text-white px-4 py-3 rounded mb-4">
+                  <p className="text-sm">{error}</p>
                 </div>
               )}
-            </div>
-            
-            {/* English summary */}
-            <div className="bg-indigo-50 border-2 border-indigo-300 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-indigo-700 mb-3">Original Summary (English)</h3>
-              {overallSummary.pros && (
-                <div>
-                  <span className="font-semibold text-green-700">Pros:</span>
-                  <ul className="list-disc pl-6 mt-1 text-green-900">
-                    {overallSummary.pros.map((pro, idx) => (
-                      <li key={idx}>{pro}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {overallSummary.cons && (
-                <div>
-                  <span className="font-semibold text-red-700">Cons:</span>
-                  <ul className="list-disc pl-6 mt-1 text-red-900">
-                    {overallSummary.cons.map((con, idx) => (
-                      <li key={idx}>{con}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {overallSummary.final_judgment && (
-                <div>
-                  <span className="font-semibold text-blue-700">
-                    Final Judgment:
-                  </span>
-                  <div className="mt-1 text-blue-900">
-                    {overallSummary.final_judgment}
+              
+              {/* Translated Summary */}
+              {translatedSummary && (
+                <div className="bg-[#23272f] border border-[#2cb67d] rounded-lg p-4">
+                  <h5 className="font-semibold mb-3" style={{ color: "#2cb67d" }}>
+                    Translated Summary ({getLanguageName(selectedLanguage)})
+                  </h5>
+                  <div className="prose max-w-none">
+                    <pre className="whitespace-pre-wrap text-[#e0e7ef] leading-relaxed">
+                      {translatedSummary}
+                    </pre>
                   </div>
                 </div>
               )}
-              {overallSummary.raw && (
-                <div className="text-gray-700 whitespace-pre-line">
-                  {overallSummary.raw}
-                </div>
-              )}
             </div>
-            
-            {/* Translated summary */}
-            {translatedSummary && (
-              <div className="bg-green-50 border-2 border-green-300 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-green-700 mb-3">
-                  Translated Summary ({getLanguageName(selectedLanguage)})
-                </h3>
-                <div className="prose max-w-none">
-                  <div className="whitespace-pre-line text-green-900 leading-relaxed">
-                    {translatedSummary}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
-      )}
-    </div>  );
+        )}
+      </div>
+    </div>
+  );
 }
 
 CategoryBatchPdfSummarizer.propTypes = {

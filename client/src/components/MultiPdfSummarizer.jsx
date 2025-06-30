@@ -66,137 +66,143 @@ function MultiPdfSummarizer() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-3xl">
-      <h1 className="text-4xl font-extrabold text-center mb-8 text-indigo-700 drop-shadow-lg">
-        Multi-PDF Case Summarizer
-      </h1>
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-2xl rounded-xl px-10 pt-8 pb-10 mb-6 border-2 border-indigo-200"
-      >
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-lg font-bold mb-2"
-            htmlFor="case-id"
-          >
-            Case ID:
-          </label>
-          <input
-            id="case-id"
-            type="text"
-            value={caseId}
-            onChange={handleCaseIdChange}
-            placeholder="e.g. robbery-case-1"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-lg"
-          />
-        </div>
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-lg font-bold mb-2"
-            htmlFor="pdfs"
-          >
-            Upload PDFs (up to 10):
-          </label>
-          <input
-            id="pdfs"
-            type="file"
-            accept="application/pdf"
-            multiple
-            onChange={handleFilesChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-lg"
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <button
-            type="submit"
-            disabled={isLoading || !caseId || !files.length}
-            className={`bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-200 ${
-              isLoading || !caseId || !files.length
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            }`}
-          >
-            {isLoading ? "Summarizing..." : "Summarize All"}
-          </button>
-        </div>
-      </form>
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-lg"
-          role="alert"
+    <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef] py-8 px-4">
+      <div className="container mx-auto max-w-4xl">
+        <h1 className="text-5xl font-extrabold text-center mb-8 text-white tracking-wider">
+          Multi-PDF Case Summarizer
+        </h1>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 mb-8 border-2 border-[#7f5af0]"
         >
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
-      {results && (
-        <div className="mt-8 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-xl rounded-xl px-10 pt-8 pb-10">
-          <h2 className="text-2xl font-bold text-indigo-800 mb-6 text-center">
-            Case Summary Results
-          </h2>
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              Individual Summaries:
-            </h3>
-            <ul className="list-disc pl-8 space-y-2">
-              {results.summaries &&
-                results.summaries.map((s, idx) => (
-                  <li
-                    key={idx}
-                    className="bg-white rounded p-3 shadow border border-indigo-100"
-                  >
-                    <span className="font-bold text-indigo-600">
-                      {s.pdfName}:
-                    </span>
-                    <pre className="whitespace-pre-wrap text-gray-800 mt-2">
-                      {typeof s.summary === "string"
-                        ? s.summary
-                        : s.summary.output_text || JSON.stringify(s.summary)}
-                    </pre>
-                  </li>
-                ))}
-            </ul>
+          <div className="mb-6">
+            <label
+              className="block text-[#e0e7ef] text-lg font-bold mb-2"
+              htmlFor="case-id"
+            >
+              Case ID:
+            </label>
+            <input
+              id="case-id"
+              type="text"
+              value={caseId}
+              onChange={handleCaseIdChange}
+              placeholder="e.g. robbery-case-1"
+              className="bg-[#18181b] border-2 border-[#7f5af0] rounded-lg w-full py-3 px-4 text-[#e0e7ef] placeholder-[#a786df] leading-tight focus:outline-none focus:ring-2 focus:ring-[#2cb67d] focus:border-[#2cb67d] text-lg transition-all duration-150"
+            />
           </div>
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              Final Summary:
-            </h3>
-            <pre className="whitespace-pre-wrap bg-white rounded p-4 shadow text-gray-900 border border-indigo-100">
-              {results.finalSummary}
-            </pre>
+            <label
+              className="block text-[#e0e7ef] text-lg font-bold mb-2"
+              htmlFor="pdfs"
+            >
+              Select PDF Files:
+            </label>
+            <input
+              id="pdfs"
+              type="file"
+              accept="application/pdf"
+              multiple
+              onChange={handleFilesChange}
+              className="bg-[#18181b] border-2 border-[#7f5af0] rounded-lg w-full py-3 px-4 text-[#e0e7ef] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#7f5af0] file:text-[#18181b] hover:file:bg-[#2cb67d] leading-tight focus:outline-none focus:ring-2 focus:ring-[#2cb67d] focus:border-[#2cb67d] text-lg transition-all duration-150"
+            />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h4 className="text-lg font-bold text-green-700 mb-2">Pros:</h4>
-              <ul className="list-disc pl-6 space-y-1">
-                {results.pros && results.pros.length > 0 ? (
-                  results.pros.map((pro, i) => (
-                    <li key={i} className="text-green-900">
-                      {pro}
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-gray-500">No pros found.</li>
-                )}
-              </ul>
+          <div className="flex items-center justify-center">
+            <button
+              type="submit"
+              disabled={isLoading || !caseId || !files.length}
+              className={`bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#2cb67d] hover:to-[#7f5af0] text-[#18181b] font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline text-lg transition-all duration-300 transform hover:scale-105 ${
+                isLoading || !caseId || !files.length
+                  ? "opacity-50 cursor-not-allowed transform-none"
+                  : ""
+              }`}
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#18181b] mr-2"></div>
+                  Summarizing...
+                </div>
+              ) : (
+                "Summarize All"
+              )}
+            </button>
+          </div>
+        </form>
+        {error && (
+          <div className="bg-red-900/20 border border-red-500 text-red-400 px-6 py-4 rounded-lg relative mb-6 text-lg">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+        {results && (
+          <div className="mt-8 bg-[#23272f] shadow-2xl rounded-xl px-10 pt-8 pb-10 border-2 border-[#7f5af0]">
+            <h2 className="text-3xl font-bold text-[#7f5af0] mb-8 text-center">
+              Case Summary Results
+            </h2>
+            <div className="mb-8">
+              <h3 className="text-2xl font-semibold text-[#2cb67d] mb-4">
+                Individual Summaries:
+              </h3>
+              <div className="space-y-4">
+                {results.summaries &&
+                  results.summaries.map((s, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-[#18181b] rounded-lg p-6 shadow border border-[#7f5af0]"
+                    >
+                      <h4 className="font-bold text-[#7f5af0] text-lg mb-3">
+                        {s.pdfName}:
+                      </h4>
+                      <pre className="whitespace-pre-wrap text-[#e0e7ef] leading-relaxed">
+                        {typeof s.summary === "string"
+                          ? s.summary
+                          : s.summary.output_text || JSON.stringify(s.summary)}
+                      </pre>
+                    </div>
+                  ))}
+              </div>
             </div>
-            <div>
-              <h4 className="text-lg font-bold text-red-700 mb-2">Cons:</h4>
-              <ul className="list-disc pl-6 space-y-1">
-                {results.cons && results.cons.length > 0 ? (
-                  results.cons.map((con, i) => (
-                    <li key={i} className="text-red-900">
-                      {con}
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-gray-500">No cons found.</li>
-                )}
-              </ul>
+            <div className="mb-8">
+              <h3 className="text-2xl font-semibold text-[#2cb67d] mb-4">
+                Final Summary:
+              </h3>
+              <pre className="whitespace-pre-wrap bg-[#18181b] rounded-lg p-6 shadow text-[#e0e7ef] border border-[#7f5af0] leading-relaxed">
+                {results.finalSummary}
+              </pre>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-[#18181b] rounded-lg p-6 border border-[#2cb67d]/50">
+                <h4 className="text-xl font-bold text-[#2cb67d] mb-4">Pros:</h4>
+                <ul className="list-disc pl-6 space-y-2">
+                  {results.pros && results.pros.length > 0 ? (
+                    results.pros.map((pro, i) => (
+                      <li key={i} className="text-[#e0e7ef]">
+                        {pro}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-[#a786df]">No pros found.</li>
+                  )}
+                </ul>
+              </div>
+              <div className="bg-[#18181b] rounded-lg p-6 border border-red-500/50">
+                <h4 className="text-xl font-bold text-red-400 mb-4">Cons:</h4>
+                <ul className="list-disc pl-6 space-y-2">
+                  {results.cons && results.cons.length > 0 ? (
+                    results.cons.map((con, i) => (
+                      <li key={i} className="text-[#e0e7ef]">
+                        {con}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-[#a786df]">No cons found.</li>
+                  )}
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
