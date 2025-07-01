@@ -61,5 +61,9 @@ app.use("/api/translate-summary", translateSummary);
 const batchSummaryHistory = require("./routes/batchSummaryHistory");
 app.use("/api", batchSummaryHistory);
 
+// Register the all categories API route
+const allCategories = require("./routes/allCategories");
+app.use("/api", allCategories);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
