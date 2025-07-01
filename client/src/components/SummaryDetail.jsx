@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { FullPageSpinner } from "./Spinner";
+import TranslationSection from "./TranslationSection";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -72,7 +73,7 @@ function SummaryDetail() {
           <span>{summary.pdfName}</span>
           <button
             title="Download PDF Summary"
-            className="ml-4 bg-[#23272f] border border-[#7f5af0] text-[#7f5af0] px-3 py-1 rounded focus:outline-none focus:shadow-outline shadow-neon flex items-center group transition-colors duration-150"
+            className="ml-4 bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             onClick={() => {
               const blob = new Blob(
                 [
@@ -93,20 +94,28 @@ function SummaryDetail() {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
+              width="16"
+              height="16"
               fill="currentColor"
               viewBox="0 0 16 16"
-              className="transition-colors duration-150 group-hover:text-[#2cb67d]"
             >
               <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z" />
               <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
             </svg>
+            Download Summary
           </button>
         </h1>
         <pre className="whitespace-pre-wrap bg-[#18181b] p-4 rounded text-[#e0e7ef] border border-[#7f5af0] text-lg">
           {summaryText}
         </pre>
+
+        {/* Translation Section */}
+        <TranslationSection 
+          textToTranslate={summaryText}
+          title="Summary Translation"
+          className="mt-6"
+          onError={(errorMsg) => setError(errorMsg)}
+        />
       </div>
     </div>
   );

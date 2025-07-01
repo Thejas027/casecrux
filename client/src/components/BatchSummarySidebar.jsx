@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { getLanguageName } from "./TranslationSection";
 
 function BatchSummarySidebar({ summary, translatedSummary, selectedLanguage }) {
   // Helper function to check if the summary object has content
@@ -17,23 +18,7 @@ function BatchSummarySidebar({ summary, translatedSummary, selectedLanguage }) {
     return new Date(date || Date.now()).toLocaleString();
   };
 
-  // Get language name from code
-  const getLanguageName = (code) => {
-    const languages = {
-      en: "English",
-      hi: "Hindi",
-      kn: "Kannada",
-      fr: "French",
-      es: "Spanish",
-      de: "German",
-      ta: "Tamil",
-      te: "Telugu",
-      ml: "Malayalam",
-      gu: "Gujarati",
-      mr: "Marathi"
-    };
-    return languages[code] || code;
-  };
+
 
   return (
     <aside className="w-72 bg-[#23272f] border-r-2 border-[#7f5af0] min-h-screen p-4 flex flex-col">

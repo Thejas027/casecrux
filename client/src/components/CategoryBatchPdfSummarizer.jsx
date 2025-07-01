@@ -3,34 +3,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { ButtonSpinner, InlineSpinner } from "./Spinner";
+import TranslationSection from "./TranslationSection";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-// Helper function to get language name from code
-const getLanguageName = (code) => {
-  const languageNames = {
-    'hi': 'Hindi',
-    'kn': 'Kannada', 
-    'ta': 'Tamil',
-    'te': 'Telugu',
-    'ml': 'Malayalam',
-    'gu': 'Gujarati',
-    'mr': 'Marathi',
-    'pa': 'Punjabi',
-    'bn': 'Bengali',
-    'fr': 'French',
-    'es': 'Spanish',
-    'de': 'German',
-    'it': 'Italian',
-    'pt': 'Portuguese',
-    'ru': 'Russian',
-    'ja': 'Japanese',
-    'ko': 'Korean',
-    'zh': 'Chinese',
-    'ar': 'Arabic'
-  };
-  return languageNames[code] || code;
-};
 
 function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
   const [category, setCategory] = useState("");
@@ -40,9 +15,7 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
   const [overallSummary, setOverallSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState("");
-  const [translatedSummary, setTranslatedSummary] = useState("");
-  const [translating, setTranslating] = useState(false);
+
   const [savingToHistory, setSavingToHistory] = useState(false);
 
   const handleListPdfs = async (e) => {
@@ -70,6 +43,19 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
     setSelectedPdfs((prev) =>
       prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url]
     );
+  };
+
+  // Helper function to prepare summary text for translation
+  const prepareSummaryForTranslation = (summary) => {
+    if (!summary) return "";
+    
+    let text = "";
+    if (summary.pros) text += `Pros:\n${summary.pros.join("\n")}`;
+    if (summary.cons) text += `\n\nCons:\n${summary.cons.join("\n")}`;
+    if (summary.final_judgment) text += `\n\nFinal Judgment:\n${summary.final_judgment}`;
+    if (summary.raw) text += `\n${summary.raw}`;
+    
+    return text;
   };
 
   // Save summary to batch history
@@ -139,58 +125,7 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
     }
   };
 
-  const handleTranslate = async () => {
-    if (!overallSummary) return;
-    if (!selectedLanguage) {
-      setError("Please select a target language for translation.");
-      return;
-    }
-    
-    setTranslating(true);
-    setTranslatedSummary("");
-    setError("");
-    
-    try {
-      console.log("Starting translation to:", selectedLanguage);
-      
-      // Combine the summary fields into a single string for translation
-      let text = "";
-      if (overallSummary.pros) text += `Pros:\n${overallSummary.pros.join("\n")}`;
-      if (overallSummary.cons) text += `\n\nCons:\n${overallSummary.cons.join("\n")}`;
-      if (overallSummary.final_judgment) text += `\n\nFinal Judgment:\n${overallSummary.final_judgment}`;
-      if (overallSummary.raw) text += `\n${overallSummary.raw}`;
-      
-      console.log("Text to translate:", text.substring(0, 100) + "...");
-      
-      const response = await axios.post(
-        `${BACKEND_URL}/api/translate-summary`,
-        { summary: text, targetLang: selectedLanguage },
-        {
-          timeout: 60000, // 60 second timeout
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      console.log("Translation response:", response.data);
-      
-      if (response.data && response.data.translated) {
-        setTranslatedSummary(response.data.translated);
-        // Call the callback if provided
-        if (onTranslationUpdate) {
-          onTranslationUpdate(response.data.translated, selectedLanguage);
-        }
-      } else {
-        throw new Error("No translated text received from server");
-      }
-    } catch (err) {
-      console.error("Translation error:", err);
-      setError(err.response?.data?.details || err.response?.data?.error || err.message || "Failed to translate summary. Please try again.");
-    } finally {
-      setTranslating(false);
-    }
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef] py-8 px-2">
@@ -330,19 +265,20 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
-                className="bg-[#2cb67d] hover:bg-[#7f5af0] text-[#18181b] font-bold py-1 px-4 rounded-lg text-sm"
+                className="bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                 title="Download Summary"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
+                  width="16"
+                  height="16"
                   fill="currentColor"
                   viewBox="0 0 16 16"
                 >
                   <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z" />
                   <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
                 </svg>
+                Download Summary
               </button>
             </div>
 
@@ -445,26 +381,15 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
                 </div>
               </div>
               
-              {/* Translation Error */}
-              {error && error.includes("translate") && (
-                <div className="bg-red-500 border border-red-400 text-white px-4 py-3 rounded mb-4">
-                  <p className="text-sm">{error}</p>
-                </div>
-              )}
-              
-              {/* Translated Summary */}
-              {translatedSummary && (
-                <div className="bg-[#23272f] border border-[#2cb67d] rounded-lg p-4">
-                  <h5 className="font-semibold mb-3" style={{ color: "#2cb67d" }}>
-                    Translated Summary ({getLanguageName(selectedLanguage)})
-                  </h5>
-                  <div className="prose max-w-none">
-                    <pre className="whitespace-pre-wrap text-[#e0e7ef] leading-relaxed">
-                      {translatedSummary}
-                    </pre>
-                  </div>
-                </div>
-              )}
+              {/* Translation Section */}
+              <TranslationSection 
+                textToTranslate={prepareSummaryForTranslation(overallSummary)}
+                onTranslationComplete={(translatedText, language) => {
+                  if (onTranslationUpdate) {
+                    onTranslationUpdate(translatedText, language);
+                  }
+                }}
+              />
             </div>
           </div>
         )}

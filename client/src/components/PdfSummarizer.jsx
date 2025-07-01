@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ButtonSpinner, InlineSpinner } from "./Spinner";
+import TranslationSection from "./TranslationSection";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -193,12 +194,12 @@ function PdfSummarizer() {
         )}
         {summary && (
           <div className="mt-6 bg-[#23272f] shadow-md rounded-xl px-8 pt-6 pb-8 border border-[#7f5af0]">
-            <div className="flex justify-between items-center mb-3">
-              <h2
-                className="text-2xl font-semibold"
-                style={{ color: "#7f5af0" }}
-              >
-                Latest Summary:
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+              <h2 className="text-2xl font-semibold text-[#7f5af0] flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                </svg>
+                Latest Summary
               </h2>
               <button
                 onClick={() => {
@@ -210,19 +211,20 @@ function PdfSummarizer() {
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
-                className="bg-[#2cb67d] hover:bg-[#7f5af0] text-[#18181b] font-bold py-1 px-4 rounded-lg text-sm ml-2"
+                className="bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                 title="Download PDF Summary"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
+                  width="16"
+                  height="16"
                   fill="currentColor"
                   viewBox="0 0 16 16"
                 >
                   <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z" />
                   <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
                 </svg>
+                Download Summary
               </button>
             </div>
             <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-[#e0e7ef]">
@@ -230,6 +232,14 @@ function PdfSummarizer() {
                 {summary}
               </pre>
             </div>
+
+            {/* Translation Section */}
+            <TranslationSection 
+              textToTranslate={summary}
+              title="Summary Translation"
+              className="mt-6"
+              onError={(errorMsg) => setError(errorMsg)}
+            />
           </div>
         )}
         {/* Flat list of all summaries, no category grouping */}
@@ -347,17 +357,47 @@ function PdfSummarizer() {
         )}
         {overallSummary && (
           <div className="mt-8 bg-[#23272f] border border-[#2cb67d] rounded-xl px-8 pt-6 pb-8">
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: "#2cb67d" }}
-            >
-              Overall Summary
-            </h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+              <h2 className="text-2xl font-bold text-[#2cb67d] flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </svg>
+                Overall Summary
+              </h2>
+              <button
+                onClick={() => {
+                  const summaryText = typeof overallSummary === "string" ? overallSummary : JSON.stringify(overallSummary, null, 2);
+                  const blob = new Blob([summaryText], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "overall-summary.txt";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                title="Download Overall Summary"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z"/>
+                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                </svg>
+                Download Overall Summary
+              </button>
+            </div>
             <div className="whitespace-pre-wrap text-[#e0e7ef] text-base">
               {typeof overallSummary === "string"
                 ? overallSummary
                 : JSON.stringify(overallSummary, null, 2)}
             </div>
+
+            {/* Translation Section for Overall Summary */}
+            <TranslationSection 
+              textToTranslate={typeof overallSummary === "string" ? overallSummary : JSON.stringify(overallSummary, null, 2)}
+              title="Overall Summary Translation"
+              className="mt-6"
+              onError={(errorMsg) => setError(errorMsg)}
+            />
           </div>
         )}
       </div>

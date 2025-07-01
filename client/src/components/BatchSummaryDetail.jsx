@@ -1,44 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import { FullPageSpinner, ButtonSpinner } from "./Spinner";
+import { FullPageSpinner } from "./Spinner";
+import TranslationSection from "./TranslationSection";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Helper function to get language name from code
-const getLanguageName = (code) => {
-  const languageNames = {
-    'hi': 'Hindi',
-    'kn': 'Kannada', 
-    'ta': 'Tamil',
-    'te': 'Telugu',
-    'ml': 'Malayalam',
-    'gu': 'Gujarati',
-    'mr': 'Marathi',
-    'pa': 'Punjabi',
-    'bn': 'Bengali',
-    'fr': 'French',
-    'es': 'Spanish',
-    'de': 'German',
-    'it': 'Italian',
-    'pt': 'Portuguese',
-    'ru': 'Russian',
-    'ja': 'Japanese',
-    'ko': 'Korean',
-    'zh': 'Chinese',
-    'ar': 'Arabic'
-  };
-  return languageNames[code] || code;
-};
+
 
 function BatchSummaryDetail() {
   const { id } = useParams();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState("");
-  const [translatedSummary, setTranslatedSummary] = useState("");
-  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     async function fetchSummary() {
@@ -60,70 +34,43 @@ function BatchSummaryDetail() {
     }
   }, [id]);
 
-  const handleTranslate = async () => {
-    if (!summary || !selectedLanguage) return;
+  // Helper function to prepare summary text for translation
+  const prepareSummaryForTranslation = (summaryData) => {
+    if (!summaryData || !summaryData.summary) return "";
     
-    setTranslating(true);
-    setTranslatedSummary("");
-    setError("");
+    const { summary: summaryContent } = summaryData;
+    let text = "";
     
+    if (summaryContent.pros && summaryContent.pros.length > 0) {
+      text += `Pros:\n${summaryContent.pros.join("\n")}`;
+    }
+    if (summaryContent.cons && summaryContent.cons.length > 0) {
+      text += `\n\nCons:\n${summaryContent.cons.join("\n")}`;
+    }
+    if (summaryContent.final_judgment) {
+      text += `\n\nFinal Judgment:\n${summaryContent.final_judgment}`;
+    }
+    if (summaryContent.raw) {
+      text += `\n\nAdditional Details:\n${summaryContent.raw}`;
+    }
+    
+    return text;
+  };
+
+  // Handle translation completion with saving to history
+  const handleTranslationComplete = async (translatedText, language) => {
     try {
-      // Combine the summary fields into a single string for translation
-      let text = "";
-      if (summary.summary.pros && summary.summary.pros.length > 0) {
-        text += `Pros:\n${summary.summary.pros.join("\n")}`;
-      }
-      if (summary.summary.cons && summary.summary.cons.length > 0) {
-        text += `\n\nCons:\n${summary.summary.cons.join("\n")}`;
-      }
-      if (summary.summary.final_judgment) {
-        text += `\n\nFinal Judgment:\n${summary.summary.final_judgment}`;
-      }
-      if (summary.summary.raw) {
-        text += `\n\nAdditional Details:\n${summary.summary.raw}`;
-      }
-      
-      const response = await axios.post(
-        `${BACKEND_URL}/api/translate-summary`,
-        { summary: text, targetLang: selectedLanguage },
-        { timeout: 30000 }
-      );
-      
-      setTranslatedSummary(response.data.translated);
-      
-      // Save translation to batch summary
-      try {
-        await axios.post(`${BACKEND_URL}/api/batch-summary-history/${id}/translations`, {
-          language: selectedLanguage,
-          text: response.data.translated
-        });
-      } catch (saveErr) {
-        console.warn("Failed to save translation to history:", saveErr);
-        // Don't show error to user as translation still succeeded
-      }
-    } catch (err) {
-      console.error("Translation error:", err);
-      const errorMessage = err.response?.data?.error || err.message || "Failed to translate summary. Please try again.";
-      setError(errorMessage);
-    } finally {
-      setTranslating(false);
+      await axios.post(`${BACKEND_URL}/api/batch-summary-history/${id}/translations`, {
+        language: language,
+        text: translatedText
+      });
+    } catch (saveErr) {
+      console.warn("Failed to save translation to history:", saveErr);
+      // Don't show error to user as translation still succeeded
     }
   };
 
-  // Try to find an existing translation
-  useEffect(() => {
-    if (summary && selectedLanguage && summary.translations) {
-      const existingTranslation = summary.translations.find(
-        t => t.language === selectedLanguage
-      );
-      
-      if (existingTranslation) {
-        setTranslatedSummary(existingTranslation.text);
-      } else {
-        setTranslatedSummary("");
-      }
-    }
-  }, [summary, selectedLanguage]);
+
 
   if (loading) {
     return <FullPageSpinner text="Loading summary..." />;
@@ -160,9 +107,55 @@ function BatchSummaryDetail() {
             <h1 className="text-4xl font-bold text-[#7f5af0]">
               {summary.category} Summary
             </h1>
-            <span className="text-sm text-[#a786df]">
-              {new Date(summary.createdAt).toLocaleString()}
-            </span>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  let content = `Category: ${summary.category}\nDate: ${new Date(summary.createdAt).toLocaleString()}\n\n`;
+                  
+                  if (summary.pdfNames && summary.pdfNames.length > 0) {
+                    content += `PDFs Included:\n${summary.pdfNames.join("\n")}\n\n`;
+                  }
+                  
+                  if (summary.summary.pros && summary.summary.pros.length > 0) {
+                    content += `Pros:\n${summary.summary.pros.join("\n")}\n\n`;
+                  }
+                  if (summary.summary.cons && summary.summary.cons.length > 0) {
+                    content += `Cons:\n${summary.summary.cons.join("\n")}\n\n`;
+                  }
+                  if (summary.summary.final_judgment) {
+                    content += `Final Judgment:\n${summary.summary.final_judgment}\n\n`;
+                  }
+                  if (summary.summary.raw) {
+                    content += `Additional Details:\n${summary.summary.raw}`;
+                  }
+                  
+                  const blob = new Blob([content], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `batch-summary-${summary.category}-${summary._id}.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] hover:from-[#7f5af0] hover:to-[#2cb67d] text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                title="Download Summary"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.6a.5.5 0 0 1 1 0V13a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-2.6a.5.5 0 0 1 .5-.5z" />
+                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                </svg>
+                Download Summary
+              </button>
+              <span className="text-sm text-[#a786df]">
+                {new Date(summary.createdAt).toLocaleString()}
+              </span>
+            </div>
           </div>
           
           {/* PDFs section */}
@@ -237,72 +230,10 @@ function BatchSummaryDetail() {
           {/* Translation section */}
           <div className="mb-6">
             <h2 className="text-2xl font-semibold text-[#2cb67d] mb-4">Translations:</h2>
-            <div className="bg-[#18181b] p-6 rounded-lg border border-[#7f5af0]">
-              <div className="flex items-center gap-4 mb-4">
-                <select
-                  className="bg-[#23272f] border-2 border-[#7f5af0] rounded-lg px-4 py-2 text-[#e0e7ef] focus:outline-none focus:ring-2 focus:ring-[#2cb67d] focus:border-[#2cb67d] transition-all duration-150"
-                  value={selectedLanguage}
-                  onChange={e => setSelectedLanguage(e.target.value)}
-                >
-                  <option value="">Select language</option>
-                  <option value="hi">Hindi</option>
-                  <option value="kn">Kannada</option>
-                  <option value="ta">Tamil</option>
-                  <option value="te">Telugu</option>
-                  <option value="ml">Malayalam</option>
-                  <option value="gu">Gujarati</option>
-                  <option value="mr">Marathi</option>
-                  <option value="pa">Punjabi</option>
-                  <option value="bn">Bengali</option>
-                  <option value="fr">French</option>
-                  <option value="es">Spanish</option>
-                  <option value="de">German</option>
-                  <option value="it">Italian</option>
-                  <option value="pt">Portuguese</option>
-                  <option value="ru">Russian</option>
-                  <option value="ja">Japanese</option>
-                  <option value="ko">Korean</option>
-                  <option value="zh">Chinese</option>
-                  <option value="ar">Arabic</option>
-                </select>
-                
-                <button
-                  className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] hover:from-[#2cb67d] hover:to-[#7f5af0] text-[#18181b] px-6 py-2 rounded-lg font-semibold shadow-lg transition-all duration-300 disabled:from-gray-500 disabled:to-gray-400 disabled:cursor-not-allowed"
-                  onClick={handleTranslate}
-                  disabled={!selectedLanguage || translating}
-                >
-                  {translating ? (
-                    <ButtonSpinner text="Translating..." />
-                  ) : (
-                    `Translate to ${selectedLanguage ? getLanguageName(selectedLanguage) : ''}`
-                  )}
-                </button>
-              </div>
-              
-              {/* Show existing translations */}
-              {summary.translations && summary.translations.length > 0 && !translatedSummary && (
-                <div className="text-sm text-[#a786df] mb-4">
-                  Existing translations: {summary.translations.map(t => getLanguageName(t.language)).join(", ")}
-                </div>
-              )}
-              
-              {/* Error message */}
-              {error && (
-                <div className="bg-red-900/20 border border-red-500 text-red-400 p-4 rounded-lg mb-4">
-                  {error}
-                </div>
-              )}
-              
-              {/* Translated text */}
-              {translatedSummary && (
-                <div className="bg-gradient-to-r from-[#2cb67d]/10 to-[#7f5af0]/10 border-2 border-[#2cb67d] p-6 rounded-lg">
-                  <h3 className="font-bold text-[#2cb67d] text-lg mb-3">
-                    Translated Summary ({getLanguageName(selectedLanguage)}):
-                  </h3>
-                  <p className="whitespace-pre-line text-[#e0e7ef] leading-relaxed">{translatedSummary}</p>
-                </div>
-              )}
-            </div>
+            <TranslationSection 
+              textToTranslate={prepareSummaryForTranslation(summary)}
+              onTranslationComplete={handleTranslationComplete}
+            />
           </div>
         </div>
       </div>
