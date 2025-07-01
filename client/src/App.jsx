@@ -10,6 +10,7 @@ import CategoryBatchPdfSummarizer from "./components/CategoryBatchPdfSummarizer"
 import CategoryBatchWithTranslationHistory from "./components/CategoryBatchWithTranslationHistory";
 import BatchSummaryHistorySidebar from "./components/BatchSummaryHistorySidebar";
 import BatchSummaryDetail from "./components/BatchSummaryDetail";
+import AdvancedPdfSummarizer from "./components/AdvancedPdfSummarizer";
 
 function App() {
   return (
@@ -52,6 +53,10 @@ function App() {
         <Route
           path="/category-download-summary"
           element={<CategoryDownloadSummary />}
+        />
+        <Route
+          path="/advanced-pdf-summarizer"
+          element={<AdvancedPdfSummarizer />}
         />
         <Route
           path="/category-batch-pdf-summarizer"

@@ -47,10 +47,10 @@ function Home() {
         </div>
         
         {/* Features Grid - full width */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 max-w-7xl mx-auto">
           <Link
             to="/pdf-summarizer"
-            className="bg-gradient-to-br from-[#7f5af0]/10 to-[#2cb67d]/10 border border-[#7f5af0]/30 rounded-2xl p-8"
+            className="bg-gradient-to-br from-[#7f5af0]/10 to-[#2cb67d]/10 border border-[#7f5af0]/30 rounded-2xl p-8 hover:border-[#7f5af0]/50 transition-all duration-300"
           >
             <div className="mb-6">
               <div className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] w-12 h-12 rounded-xl flex items-center justify-center mb-4">
@@ -72,10 +72,39 @@ function Home() {
               </svg>
             </div>
           </Link>
+
+          <Link
+            to="/advanced-pdf-summarizer"
+            className="bg-gradient-to-br from-[#ff6b6b]/10 to-[#4ecdc4]/10 border border-[#ff6b6b]/30 rounded-2xl p-8 hover:border-[#ff6b6b]/50 transition-all duration-300 relative"
+          >
+            {/* NEW badge */}
+            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-[#ff6b6b] to-[#4ecdc4] text-[#18181b] px-2 py-1 rounded-lg text-xs font-bold">
+              NEW
+            </div>
+            <div className="mb-6">
+              <div className="bg-gradient-to-r from-[#ff6b6b] to-[#4ecdc4] w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-[#18181b]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1v-2z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                🚀 Advanced PDF Summarizer
+              </h3>
+              <p className="text-[#e0e7ef]/70 text-sm leading-relaxed">
+                <strong className="text-[#ff6b6b]">NEW!</strong> Multiple summarization levels (Detailed, Concise, Executive) with Abstractive & Extractive methods
+              </p>
+            </div>
+            <div className="flex items-center text-[#ff6b6b] text-sm font-medium">
+              Try Advanced Features
+              <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+              </svg>
+            </div>
+          </Link>
           
           <Link
             to="/category-batch-pdf-summarizer"
-            className="bg-gradient-to-br from-[#2cb67d]/10 to-[#7f5af0]/10 border border-[#2cb67d]/30 rounded-2xl p-8"
+            className="bg-gradient-to-br from-[#2cb67d]/10 to-[#7f5af0]/10 border border-[#2cb67d]/30 rounded-2xl p-8 hover:border-[#2cb67d]/50 transition-all duration-300"
           >
             <div className="mb-6">
               <div className="bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] w-12 h-12 rounded-xl flex items-center justify-center mb-4">
@@ -100,7 +129,7 @@ function Home() {
         </div>
         
         {/* Features highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 max-w-5xl mx-auto">
           <div className="text-center p-6 rounded-xl bg-[#7f5af0]/5 border border-[#7f5af0]/20">
             <div className="w-12 h-12 bg-[#7f5af0]/20 rounded-lg flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-[#7f5af0]" fill="currentColor" viewBox="0 0 20 20">
@@ -109,6 +138,15 @@ function Home() {
             </div>
             <h4 className="text-lg font-semibold text-[#7f5af0] mb-2">AI-Powered</h4>
             <p className="text-sm text-[#e0e7ef]/60">Advanced algorithms</p>
+          </div>
+          <div className="text-center p-6 rounded-xl bg-[#ff6b6b]/5 border border-[#ff6b6b]/20">
+            <div className="w-12 h-12 bg-[#ff6b6b]/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-[#ff6b6b]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1v-2z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <h4 className="text-lg font-semibold text-[#ff6b6b] mb-2">Multi-Level</h4>
+            <p className="text-sm text-[#e0e7ef]/60">5 summary types</p>
           </div>
           <div className="text-center p-6 rounded-xl bg-[#2cb67d]/5 border border-[#2cb67d]/20">
             <div className="w-12 h-12 bg-[#2cb67d]/20 rounded-lg flex items-center justify-center mx-auto mb-4">

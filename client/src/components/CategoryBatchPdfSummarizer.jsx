@@ -380,7 +380,74 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
     }
   };
 
+  // Advanced summarization with multiple levels and methods
+  const handleAdvancedSummarization = async (urls, useComparison = false) => {
+    try {
+      setLoadingProgress({ step: "Starting enhanced analysis...", progress: 75 });
+      
+      // For now, use the existing ML service with enhanced prompts
+      // This will create a more detailed summary based on the selected options
+      const enhancedPrompt = createEnhancedPrompt(summaryType, summaryMethod);
+      
+      // Call existing ML service but with enhanced settings
+      const summaryResponse = await axios.post(
+        `${import.meta.env.VITE_ML_BACKEND_URL}/summarize_from_urls`,
+        { 
+          urls: urls,
+          // Add context about desired summary type
+          prompt_enhancement: enhancedPrompt
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 180000 // 3 minutes
+        }
+      );
+      
+      if (summaryResponse.data && summaryResponse.data.overall_summary) {
+        // Process the result to match our advanced format
+        const enhancedResult = {
+          summary: summaryResponse.data.overall_summary,
+          method: summaryMethod,
+          level: summaryType,
+          word_count: Array.isArray(summaryResponse.data.overall_summary) 
+            ? summaryResponse.data.overall_summary.reduce((acc, item) => acc + (item.summary || '').split(' ').length, 0)
+            : (summaryResponse.data.overall_summary.toString().split(' ').length || 0),
+          processing_info: {
+            model_used: 'existing-ml-service',
+            enhancement_applied: true,
+            urls_processed: urls.length
+          }
+        };
+        
+        setAdvancedSummaryResults(enhancedResult);
+        setComparisonResults(null);
+      }
+      
+      setLoadingProgress({ step: "Enhanced analysis complete!", progress: 100 });
+      
+    } catch (err) {
+      console.error('Error in enhanced analysis:', err);
+      const errorMessage = err.response?.data?.detail || err.message || "Enhanced analysis failed";
+      setError(`Enhanced analysis failed: ${errorMessage}`);
+      throw err;
+    }
+  };
 
+  // Helper function to create enhanced prompts based on user selection
+  const createEnhancedPrompt = (type, method) => {
+    const prompts = {
+      detailed: "Provide a comprehensive and detailed legal analysis",
+      concise: "Provide a concise summary focusing only on key points",
+      executive: "Provide an executive summary suitable for business decision-makers"
+    };
+    
+    const methodHints = {
+      abstractive: "with interpretive analysis and connections between concepts",
+      extractive: "highlighting the most important direct quotes and key sentences"
+    };
+    
+    return `${prompts[type] || prompts.detailed} ${methodHints[method] || methodHints.abstractive}.`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#18181b] via-[#23272f] to-[#1e1b4b] text-[#e0e7ef] py-8 px-4">
@@ -666,7 +733,8 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
                   <h3 className="text-xl font-bold text-yellow-400 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                    </svg>
+                      <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c-1.79-.527-1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.292-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.292c.415.764-.42 1.6-1.185 1.184l-.292-.159a1.873 1.873 0 0 0-2.692 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.292A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                  </svg>
                     💡 Available Categories ({availableCategories.length})
                   </h3>
                   <button
