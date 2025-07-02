@@ -90,8 +90,11 @@ function Home() {
               <h3 className="text-2xl font-bold text-white mb-3">
                 🚀 Advanced PDF Summarizer
               </h3>
+              <p className="text-[#e0e7ef]/70 text-sm leading-relaxed mb-2">
+                <strong className="text-[#ff6b6b]">Multiple levels of summarization:</strong> Detailed, Concise, Executive analysis
+              </p>
               <p className="text-[#e0e7ef]/70 text-sm leading-relaxed">
-                <strong className="text-[#ff6b6b]">NEW!</strong> Multiple summarization levels (Detailed, Concise, Executive) with Abstractive & Extractive methods
+                <strong className="text-[#4ecdc4]">Abstractive & Extractive:</strong> AI-generated insights plus key sentence extraction
               </p>
             </div>
             <div className="flex items-center text-[#ff6b6b] text-sm font-medium">
@@ -109,18 +112,18 @@ function Home() {
             <div className="mb-6">
               <div className="bg-gradient-to-r from-[#2cb67d] to-[#7f5af0] w-12 h-12 rounded-xl flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-[#18181b]" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd"/>
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
                 </svg>
               </div>
               <h3 className="text-2xl font-bold text-white mb-3">
-                Batch PDF Summarizer
+                🔍 Search and Summary
               </h3>
               <p className="text-[#e0e7ef]/70 text-sm leading-relaxed">
-                Process multiple documents by category with comprehensive analysis, pros/cons evaluation, and final judgments
+                Search and process multiple legal documents by category with comprehensive analysis, pros/cons evaluation, and final judgments
               </p>
             </div>
             <div className="flex items-center text-[#2cb67d] text-sm font-medium">
-              Get Started
+              Search & Analyze
               <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
               </svg>
@@ -146,16 +149,25 @@ function Home() {
               </svg>
             </div>
             <h4 className="text-lg font-semibold text-[#ff6b6b] mb-2">Multi-Level</h4>
-            <p className="text-sm text-[#e0e7ef]/60">5 summary types</p>
+            <p className="text-sm text-[#e0e7ef]/60">Advanced analysis types</p>
+          </div>
+          <div className="text-center p-6 rounded-xl bg-[#4ecdc4]/5 border border-[#4ecdc4]/20">
+            <div className="w-12 h-12 bg-[#4ecdc4]/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-[#4ecdc4]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M9.504 1.132a1 1 0 01.992 0l1.75 1a1 1 0 11-.992 1.736L10 3.152l-1.254.716a1 1 0 11-.992-1.736l1.75-1zM5.618 4.504a1 1 0 01-.372 1.364L5.016 6l.23.132a1 1 0 11-.992 1.736L3 7.723V8a1 1 0 01-2 0V6a.996.996 0 01.52-.878l1.734-.99a1 1 0 011.364.372zm8.764 0a1 1 0 011.364-.372l1.733.99A.996.996 0 0118 6v2a1 1 0 11-2 0v-.277l-1.254.145a1 1 0 11-.992-1.736L14.984 6l-.23-.132a1 1 0 01-.372-1.364zm-7 4a1 1 0 011.364-.372L10 8.848l1.254-.716a1 1 0 11.992 1.736L11 10.723V11a1 1 0 11-2 0v-.277l-1.246-.855a1 1 0 01-.372-1.364zM3 11a1 1 0 011 1v.277l1.254-.145a1 1 0 01.992 1.736L5.016 14l.23.132a1 1 0 11-.372 1.364l-1.733-.99A.996.996 0 013 14v-2a1 1 0 011-1zm14 0a1 1 0 011 1v2a.996.996 0 01-.52.878l-1.734.99a1 1 0 11-1.364-.372L14.984 14l-.23-.132a1 1 0 11.992-1.736L16.984 12V11a1 1 0 011-1zm-9.618 5.504a1 1 0 011.364.372L10 17.152l1.254-.716a1 1 0 11.992 1.736l-1.75 1a1 1 0 01-.992 0l-1.75-1a1 1 0 01.372-1.364z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <h4 className="text-lg font-semibold text-[#4ecdc4] mb-2">Dual Methods</h4>
+            <p className="text-sm text-[#e0e7ef]/60">Abstractive + Extractive</p>
           </div>
           <div className="text-center p-6 rounded-xl bg-[#2cb67d]/5 border border-[#2cb67d]/20">
             <div className="w-12 h-12 bg-[#2cb67d]/20 rounded-lg flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-[#2cb67d]" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
               </svg>
             </div>
-            <h4 className="text-lg font-semibold text-[#2cb67d] mb-2">Secure</h4>
-            <p className="text-sm text-[#e0e7ef]/60">Privacy protected</p>
+            <h4 className="text-lg font-semibold text-[#2cb67d] mb-2">Search & Batch</h4>
+            <p className="text-sm text-[#e0e7ef]/60">Categorized analysis</p>
           </div>
           <div className="text-center p-6 rounded-xl bg-[#7f5af0]/5 border border-[#7f5af0]/20">
             <div className="w-12 h-12 bg-[#7f5af0]/20 rounded-lg flex items-center justify-center mx-auto mb-4">
