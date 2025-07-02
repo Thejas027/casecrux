@@ -4,7 +4,6 @@ import requests
 from app.services.summarizer import summarize_pdf
 from app.utils.logger import logger
 from app.services.general_overall_summarizer import summarize_general_overall
-from app.config import get_groq_keys_count
 
 router = APIRouter()
 
@@ -15,19 +14,35 @@ class UrlsRequest(BaseModel):
 
 @router.post("/summarize_from_urls")
 async def summarize_from_urls(request: UrlsRequest):
-    """
-    Summarize PDFs from URLs with comprehensive error handling
-    """
-    try:
-        # Check if GROQ API keys are available
-        if get_groq_keys_count() == 0:
-            logger.warning("No GROQ API keys available, returning demo response")
-            return create_demo_response(request.urls)
-        
-        summaries = []
-        for url in request.urls:
+    summaries = []
+    for url in request.urls:
+        try:
+            logger.info(f"Downloading PDF from URL: {url}")
+            response = requests.get(url)
+            if response.status_code != 200:
+                logger.error(
+                    f"Failed to download PDF: {url} (status {response.status_code})")
+                summaries.append(
+                    {"url": url, "error": f"Failed to download PDF: {response.status_code}"})
+                continue
+            pdf_bytes = response.content
             try:
-                logger.info(f"Downloading PDF from URL: {url}")
+                summary = summarize_pdf(pdf_bytes)
+                summaries.append({"url": url, "summary": summary})
+                logger.info(f"Successfully summarized PDF from URL: {url}")
+            except Exception as summarize_err:
+                logger.error(
+                    f"Summarization failed for {url}: {summarize_err}")
+                summaries.append(
+                    {"url": url, "error": f"Summarization failed: {summarize_err}"})
+        except Exception as e:
+            logger.error(f"Error processing URL {url}: {e}")
+            summaries.append({"url": url, "error": str(e)})
+    logger.info(
+        f"Batch summarize_from_urls completed. Total: {len(request.urls)}")
+    # Use new general overall summarizer for a single, simple summary
+    overall = summarize_general_overall(summaries)
+    return {"overall_summary": overall}
                 response = requests.get(url, timeout=30)
                 if response.status_code != 200:
                     logger.error(f"Failed to download PDF: {url} (status {response.status_code})")
