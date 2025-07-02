@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GROQ_API_KEY_FROM_ENV = os.getenv("GROQ_API_KEY")
+# ...existing code...
+# (DEBUG LINE REMOVED)
+# ...existing code...
 
 # Load all GROQ API keys from environment variables
 GROQ_API_KEYS = [

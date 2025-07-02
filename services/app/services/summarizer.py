@@ -1,5 +1,6 @@
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
+from langchain.chains.summarize import load_summarize_chain
 from langchain_groq import ChatGroq
 from app.utils.pdf_reader import extract_text_from_pdf
 from app.config import get_next_groq_api_key
@@ -23,45 +24,17 @@ def summarize_pdf(file_bytes: bytes) -> str:
         text = extract_text_from_pdf(file_bytes)
         chunks = [Document(page_content=text[i:i+3000])
                   for i in range(0, len(text), 3000)]
-        
         # Use a new LLM instance with the next API key for each request
         llm = ChatGroq(groq_api_key=get_next_groq_api_key(),
                        model_name="llama3-8b-8192")
-        
-        # Modern LangChain approach - use map_reduce manually
-        if len(chunks) == 1:
-            # Single chunk - use combine prompt directly
-            chain = combine_prompt | llm
-            result = chain.invoke({"text": chunks[0].page_content})
-        else:
-            # Multiple chunks - map then reduce
-            # First, summarize each chunk
-            map_chain = map_prompt | llm
-            chunk_summaries = []
-            for chunk in chunks:
-                chunk_result = map_chain.invoke({"text": chunk.page_content})
-                if hasattr(chunk_result, 'content'):
-                    chunk_summaries.append(chunk_result.content)
-                else:
-                    chunk_summaries.append(str(chunk_result))
-            
-            # Then combine all chunk summaries
-            combined_text = "\n\n".join(chunk_summaries)
-            combine_chain = combine_prompt | llm
-            result = combine_chain.invoke({"text": combined_text})
-        
-        # Handle different response types
-        if hasattr(result, 'content'):
-            result_text = result.content
-        else:
-            result_text = str(result)
-            
+        chain = load_summarize_chain(
+            llm, chain_type="map_reduce", map_prompt=map_prompt, combine_prompt=combine_prompt)
+        result = chain.invoke(chunks)
         logger.info("PDF summarized successfully", extra={"length": len(text)})
-        return result_text
+        return result
     except Exception as e:
         logger.error(f"Error in summarize_pdf: {e}")
-        # Return demo mode fallback instead of raising
-        return f"Demo summary: This document appears to contain {len(text) if 'text' in locals() else 'unknown'} characters of content. Full summarization requires proper API configuration."
+        raise
 
 
 def summarize_overall(summaries: list):
@@ -98,32 +71,22 @@ Summaries:
 '''
     from langchain.docstore.document import Document
     from langchain.prompts import PromptTemplate
+    from langchain.chains.llm import LLMChain
     from langchain_groq import ChatGroq
     from app.config import get_next_groq_api_key
     llm = ChatGroq(groq_api_key=get_next_groq_api_key(),
                    model_name="llama3-8b-8192")
-    
-    # Use modern LangChain approach instead of deprecated LLMChain
-    prompt_template = PromptTemplate.from_template("{text}")
-    chain = prompt_template | llm
-    
+    chain = LLMChain(llm=llm, prompt=PromptTemplate.from_template("{text}"))
     import json
     import re
-    result = chain.invoke({"text": prompt})
-    
-    # Handle different response types
-    if hasattr(result, 'content'):
-        result_text = result.content
-    else:
-        result_text = str(result)
-    
+    result = chain.run({"text": prompt})
     try:
-        return json.loads(result_text)
+        return json.loads(result)
     except Exception:
-        match = re.search(r'\[.*?\]', result_text, re.DOTALL)
+        match = re.search(r'\[.*?\]', result, re.DOTALL)
         if match:
             try:
                 return json.loads(match.group(0))
             except Exception:
                 pass
-        return {"error": "Failed to parse LLM output", "raw": result_text}
+        return {"error": "Failed to parse LLM output", "raw": result}

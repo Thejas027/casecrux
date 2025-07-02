@@ -1,5 +1,6 @@
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
+from langchain.chains.llm import LLMChain
 from langchain_groq import ChatGroq
 from app.config import get_next_groq_api_key
 
@@ -26,30 +27,19 @@ Summaries:
 '''
     llm = ChatGroq(groq_api_key=get_next_groq_api_key(),
                    model_name="llama3-8b-8192")
-    
-    # Use modern LangChain approach instead of deprecated LLMChain
-    prompt_template = PromptTemplate.from_template("{text}")
-    chain = prompt_template | llm
-    
+    chain = LLMChain(llm=llm, prompt=PromptTemplate.from_template("{text}"))
     import json
     import re
-    result = chain.invoke({"text": prompt})
-    
-    # Handle different response types
-    if hasattr(result, 'content'):
-        result_text = result.content
-    else:
-        result_text = str(result)
-    
+    result = chain.run({"text": prompt})
     # Try to parse as JSON, else return as plain text
     try:
-        return json.loads(result_text)
+        return json.loads(result)
     except Exception:
         # Try to extract a JSON object from the result
-        match = re.search(r'\{.*\}', result_text, re.DOTALL)
+        match = re.search(r'\{.*\}', result, re.DOTALL)
         if match:
             try:
                 return json.loads(match.group(0))
             except Exception:
                 pass
-        return {"raw": result_text}
+        return {"raw": result}
