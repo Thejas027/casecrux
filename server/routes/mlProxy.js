@@ -482,4 +482,107 @@ router.get("/ml/diagnostics", (req, res) => {
   res.json(diagnostics);
 });
 
+// Section-wise advanced summarize endpoint
+router.post("/ml/advanced_summarize_with_sections", async (req, res) => {
+  console.log("\n🔍 POST /ml/advanced_summarize_with_sections - Starting section-wise request");
+  console.log("📋 Request body keys:", Object.keys(req.body || {}));
+  
+  try {
+    // Check if ML service is available
+    const isMLServiceHealthy = await checkMLServiceHealth();
+    if (!isMLServiceHealthy) {
+      console.log("🚨 ML service not available, using demo mode");
+      return res.json(createSectionWiseDemoResponse());
+    }
+    
+    console.log("🔗 Target URL:", `${ML_SERVICE_URL}/advanced_summarize_with_sections`);
+    
+    const response = await axios.post(
+      `${ML_SERVICE_URL}/advanced_summarize_with_sections`,
+      req.body,
+      {
+        headers: {
+          'Content-Type': req.headers['content-type'] || 'application/json'
+        },
+        timeout: 300000 // 5 minutes
+      }
+    );
+    
+    logSuccess("advanced_summarize_with_sections", response);
+    res.json(response.data);
+    
+  } catch (error) {
+    logError("advanced_summarize_with_sections", error);
+    
+    // Return demo response on error
+    return res.json(createSectionWiseDemoResponse());
+  }
+});
+
+function createSectionWiseDemoResponse() {
+  return {
+    success: true,
+    demo_mode: true,
+    summary: {
+      overall_summary: {
+        summary: "[DEMO MODE] This would be a comprehensive legal analysis with advanced AI processing. The system would analyze the document structure, identify key sections, and provide detailed summaries for each part.",
+        method: "abstractive",
+        level: "detailed",
+        word_count: 45,
+        processing_info: {
+          demo_mode: true,
+          api_based: false
+        }
+      },
+      section_summaries: {
+        introduction: {
+          summary: "[DEMO] Introduction section - Case background, parties involved, and initial circumstances would be analyzed here.",
+          section_type: "introduction",
+          method: "abstractive",
+          word_count: 18
+        },
+        facts: {
+          summary: "[DEMO] Facts section - Key events, timeline, evidence, and relevant circumstances would be extracted and summarized.",
+          section_type: "facts",
+          method: "abstractive", 
+          word_count: 16
+        },
+        legal_issues: {
+          summary: "[DEMO] Legal issues section - Primary legal questions, areas of law, and specific standards would be identified.",
+          section_type: "legal_issues",
+          method: "abstractive",
+          word_count: 17
+        },
+        analysis: {
+          summary: "[DEMO] Analysis section - Court's reasoning, legal principles applied, precedents cited, and logical framework would be detailed.",
+          section_type: "analysis",
+          method: "abstractive",
+          word_count: 19
+        },
+        holding: {
+          summary: "[DEMO] Holding section - Final court determination, legal ruling, and rationale would be summarized.",
+          section_type: "holding",
+          method: "abstractive",
+          word_count: 15
+        }
+      },
+      sections_detected: ["introduction", "facts", "legal_issues", "analysis", "holding"],
+      processing_info: {
+        total_sections: 5,
+        method: "abstractive",
+        level: "detailed",
+        section_wise_analysis: true,
+        demo_mode: true
+      }
+    },
+    metadata: {
+      filename: "demo-document.pdf",
+      summary_type: "detailed",
+      method: "abstractive",
+      section_wise: true,
+      demo_mode: true
+    }
+  };
+}
+
 module.exports = router;

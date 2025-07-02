@@ -295,6 +295,80 @@ async def batch_advanced_summarize(request: Request):
         raise HTTPException(status_code=500, detail=f"Batch processing failed: {str(e)}")
 
 
+@router.post("/advanced_summarize_with_sections")
+async def advanced_summarize_with_sections(
+    file: UploadFile = File(...),
+    summary_type: str = 'detailed',
+    method: str = 'abstractive'
+):
+    """
+    Advanced PDF summarization with section-wise analysis
+    
+    Parameters:
+    - file: PDF file to summarize
+    - summary_type: detailed, concise, executive, technical, bullets
+    - method: abstractive, extractive, hybrid
+    """
+    try:
+        # Check if GROQ API keys are available
+        if get_groq_keys_count() == 0:
+            logger.warning("No GROQ API keys available for section-wise summarization")
+            return create_section_wise_demo_response(file.filename, summary_type, method)
+        
+        # Validate parameters
+        valid_types = ['detailed', 'concise', 'executive', 'technical', 'bullets']
+        valid_methods = ['abstractive', 'extractive', 'hybrid']
+        
+        if summary_type not in valid_types:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid summary_type. Must be one of: {valid_types}"
+            )
+        
+        if method not in valid_methods:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid method. Must be one of: {valid_methods}"
+            )
+        
+        # Read file content
+        content = await file.read()
+        
+        if not content:
+            raise HTTPException(status_code=400, detail="Empty file provided")
+        
+        logger.info(f"Processing PDF with section-wise {method} method, {summary_type} level")
+        
+        # Generate section-wise summary
+        result = lightweight_advanced_summarizer.summarize_pdf_with_sections(
+            file_bytes=content,
+            summary_type=summary_type,
+            method=method
+        )
+        
+        return {
+            "success": True,
+            "summary": result,
+            "metadata": {
+                "filename": file.filename,
+                "summary_type": summary_type,
+                "method": method,
+                "file_size": len(content),
+                "section_wise": True
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in section-wise advanced summarization: {e}")
+        return create_section_wise_demo_response(
+            file.filename if file else "document.pdf", 
+            summary_type, 
+            method
+        )
+
+
 def create_advanced_demo_response(filename: str, summary_type: str, method: str) -> dict:
     """Create demo response for advanced PDF summarization"""
     
@@ -398,6 +472,59 @@ def create_comparison_demo_response(filename: str, summary_type: str) -> dict:
             "filename": filename,
             "summary_type": summary_type,
             "methods_compared": 3,
+            "demo_mode": True
+        }
+    }
+
+
+def create_section_wise_demo_response(filename: str, summary_type: str, method: str):
+    """Create demo response for section-wise summarization when no API keys available"""
+    return {
+        "success": True,
+        "demo_mode": True,
+        "summary": {
+            "overall_summary": {
+                "summary": f"[DEMO MODE] This would be a {summary_type} {method} summary of {filename}. The document would be processed using advanced AI models to provide comprehensive legal analysis with pros, cons, and strategic insights.",
+                "method": method,
+                "level": summary_type,
+                "word_count": 50
+            },
+            "section_summaries": {
+                "introduction": {
+                    "summary": f"[DEMO] Introduction section summary - case background and context would be analyzed here using {method} method.",
+                    "section_type": "introduction",
+                    "method": method
+                },
+                "facts": {
+                    "summary": f"[DEMO] Facts section summary - key events and evidence would be extracted and summarized here.",
+                    "section_type": "facts", 
+                    "method": method
+                },
+                "analysis": {
+                    "summary": f"[DEMO] Legal analysis section - court reasoning and legal principles would be detailed here.",
+                    "section_type": "analysis",
+                    "method": method
+                },
+                "holding": {
+                    "summary": f"[DEMO] Holding section - final decision and ruling would be summarized here.",
+                    "section_type": "holding",
+                    "method": method
+                }
+            },
+            "sections_detected": ["introduction", "facts", "analysis", "holding"],
+            "processing_info": {
+                "total_sections": 4,
+                "method": method,
+                "level": summary_type,
+                "section_wise_analysis": True,
+                "demo_mode": True
+            }
+        },
+        "metadata": {
+            "filename": filename,
+            "summary_type": summary_type,
+            "method": method,
+            "section_wise": True,
             "demo_mode": True
         }
     }
