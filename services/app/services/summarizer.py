@@ -7,29 +7,52 @@ from app.config import get_next_groq_api_key
 from app.utils.logger import logger
 
 map_prompt = PromptTemplate.from_template("""
-Write a **detailed and comprehensive legal analysis** of the following content. Structure your analysis with clear sections and include:
+Analyze the following legal document content and provide a comprehensive summary with clear structure:
 
-1. **Executive Summary**: Brief overview of the main points
-2. **Key Legal Points**: Important legal concepts, arguments, and findings  
-3. **Evidence and Facts**: Relevant factual information and evidence presented
-4. **Legal Reasoning**: Court's analysis and reasoning process
-5. **Conclusions**: Final determinations and their implications
+**DOCUMENT ANALYSIS:**
+1. **Case Overview**: Brief description of what this document is about
+2. **Key Legal Points**: Main legal concepts, statutes, or precedents mentioned
+3. **Important Facts**: Relevant factual information and evidence
+4. **Pros (Positive Aspects)**: Favorable points, strong arguments, supporting evidence
+5. **Cons (Negative Aspects)**: Weaknesses, potential issues, opposing arguments
+6. **Legal Reasoning**: Court's or party's analysis and logic
+7. **Outcome/Decision**: Final ruling, recommendation, or conclusion
 
-Make sure to include specific details, legal terminology, and comprehensive insights that would be valuable for both detailed analysis and executive summaries.
+Provide detailed analysis with specific legal terminology and comprehensive insights.
 
 Content: {text}
 """)
 
 combine_prompt = PromptTemplate.from_template("""
-Given the detailed legal analyses below, create a **comprehensive and well-structured legal summary** that:
+Based on the legal document analyses below, create a comprehensive summary with this structure:
 
-1. **Executive Summary**: Provides a clear overview of the entire case/document
-2. **Key Legal Points**: Consolidates all important legal concepts and arguments
-3. **Evidence and Facts**: Summarizes all relevant factual information
-4. **Legal Reasoning**: Explains the overall legal analysis and reasoning
-5. **Conclusions**: States the final determinations and their broader implications
+**EXECUTIVE SUMMARY**: Clear overview of the entire document/case
 
-Ensure the summary is rich in detail and legal insight, suitable for both detailed review and executive briefing. Include specific legal terminology and comprehensive analysis.
+**KEY LEGAL POINTS**: All important legal concepts, statutes, and precedents
+
+**PROS (Positive Aspects)**:
+- Strong arguments and favorable points
+- Supporting evidence and precedents
+- Advantageous legal positions
+
+**CONS (Negative Aspects)**:
+- Weaknesses and potential issues
+- Opposing arguments or contrary evidence
+- Legal risks or unfavorable precedents
+
+**FACTUAL BACKGROUND**: Relevant facts and evidence presented
+
+**LEGAL REASONING**: Overall analysis and logical reasoning
+
+**FINAL ASSESSMENT**: Conclusion about the legal position, strength of case, and implications
+
+**ADDITIONAL INSIGHTS**:
+- Procedural considerations
+- Strategic recommendations
+- Potential future implications
+- Related legal areas
+
+Make this a normal, comprehensive legal summary with proper pros/cons analysis and valuable insights for legal professionals.
 
 Analyses: {text}
 """)
@@ -66,25 +89,42 @@ def summarize_overall(summaries: list):
         summary_texts.append(f"PDF: {s.get('pdfName', '')}\n{text}")
     joined = "\n\n".join(summary_texts)
     prompt = f'''
-Given the following legal case summaries, for each case, extract and return a JSON array with:
-- case_name: The name of the case (or PDF name if not available)
-- pros: The main pros/positive points from the judgment (as a short list)
-- cons: The main cons/negative points from the judgment (as a short list)
-- final_judgment: The final judgment (in 1-2 sentences)
-- judgment_against: Who the judgment was against (e.g., 'employer', 'employee', 'taxpayer', etc.)
+Analyze the following collection of legal case summaries and provide a comprehensive overview with detailed insights.
 
-Respond ONLY with a valid JSON array, no explanation, no markdown, no prose, no code block, just the JSON array. If you do not follow this, the result will be discarded.
-
-Example:
-[
-  {{
-    "case_name": "Case Name",
-    "pros": ["..."],
-    "cons": ["..."],
-    "final_judgment": "...",
-    "judgment_against": "..."
+Create a JSON response with this structure:
+{{
+  "category_explanation": "Explanation of what type of legal cases this collection represents and their common characteristics",
+  "individual_cases": [
+    {{
+      "case_name": "Name of the case or PDF",
+      "key_points": ["Main legal points from this case"],
+      "pros": ["Positive aspects/favorable outcomes"],
+      "cons": ["Negative aspects/unfavorable outcomes"],
+      "final_judgment": "Brief judgment or outcome",
+      "judgment_against": "Who the judgment was against (e.g., employer, employee, taxpayer, etc.)"
+    }}
+  ],
+  "overall_summary": {{
+    "dominant_legal_themes": ["Main areas of law represented in this collection"],
+    "common_pros": ["Recurring positive patterns across cases"],
+    "common_cons": ["Recurring negative patterns across cases"],
+    "overall_assessment": "Synthesized judgment about the entire collection (2-3 sentences)",
+    "success_rate": "General assessment of favorable vs unfavorable outcomes"
+  }},
+  "legal_insights": {{
+    "key_precedents": ["Important legal precedents established or referenced"],
+    "procedural_considerations": ["Important procedural aspects to note"],
+    "strategic_recommendations": ["Practical advice for handling similar cases"],
+    "emerging_trends": ["Legal trends or patterns observed across the cases"],
+    "risk_factors": ["Common risk factors that lead to unfavorable outcomes"]
+  }},
+  "metadata": {{
+    "total_cases": "Number of cases analyzed",
+    "analysis_scope": "Brief description of the scope and limitations of this analysis"
   }}
-]
+}}
+
+Provide comprehensive analysis that would be valuable for legal professionals handling similar cases. Focus on both individual case details and overarching patterns across the collection.
 
 Summaries:
 {joined}
@@ -103,10 +143,23 @@ Summaries:
     try:
         return json.loads(result)
     except Exception:
-        match = re.search(r'\[.*?\]', result, re.DOTALL)
+        # Try to extract a JSON object from the result
+        match = re.search(r'\{.*\}', result, re.DOTALL)
         if match:
             try:
                 return json.loads(match.group(0))
             except Exception:
                 pass
-        return {"error": "Failed to parse LLM output", "raw": result}
+        # If JSON parsing fails, return a structured error response
+        return {
+            "error": "Failed to parse LLM output", 
+            "raw": result,
+            "category_explanation": "Analysis failed - unable to parse response",
+            "individual_cases": [],
+            "overall_summary": {
+                "overall_assessment": "Analysis could not be completed due to parsing error"
+            },
+            "legal_insights": {
+                "strategic_recommendations": ["Please try again or contact support"]
+            }
+        }

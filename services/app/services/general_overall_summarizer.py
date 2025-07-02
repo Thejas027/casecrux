@@ -15,12 +15,20 @@ def summarize_general_overall(summaries: list) -> dict:
         summary_texts.append(text)
     joined = "\n\n".join(summary_texts)
     prompt = f'''
-Given the following legal case summaries, provide a single, simple, overall summary for a non-expert. Only output:
-- pros: The main positive points (as a short list)
-- cons: The main negative points (as a short list)
-- final_judgment: The overall final judgment in 1-2 sentences
+Given the following legal case summaries, provide a comprehensive overall summary analyzing the entire set of cases as a whole. 
 
-Do NOT list individual cases or PDFs. Do NOT output any case names. Just give the general pros, cons, and final judgment for the whole set.
+Create a JSON response with this structure:
+{{
+  "category_overview": "Brief explanation of what this collection of cases represents",
+  "overall_pros": ["Main positive aspects across all cases", "Common favorable outcomes", "Strong legal precedents identified"],
+  "overall_cons": ["Main negative aspects across all cases", "Common unfavorable outcomes", "Potential legal risks identified"],
+  "final_judgment": "Overall assessment and final judgment about the entire collection (2-3 sentences)",
+  "legal_insights": ["Key legal principles that emerge from the collection", "Important trends or patterns observed", "Strategic recommendations for similar cases"],
+  "case_count": "Number of cases analyzed",
+  "dominant_themes": ["Main legal themes or areas of law covered"]
+}}
+
+Provide a TRUE overall summary - not individual case pros/cons, but synthesized insights about the ENTIRE collection. Focus on patterns, trends, and overarching legal principles that emerge when viewing all cases together.
 
 Summaries:
 {joined}
@@ -31,7 +39,7 @@ Summaries:
     import json
     import re
     result = chain.run({"text": prompt})
-    # Try to parse as JSON, else return as plain text
+    # Try to parse as JSON, else return structured fallback
     try:
         return json.loads(result)
     except Exception:
@@ -42,4 +50,14 @@ Summaries:
                 return json.loads(match.group(0))
             except Exception:
                 pass
-        return {"raw": result}
+        # Return structured fallback response
+        return {
+            "category_overview": "Analysis failed - unable to parse response",
+            "overall_pros": ["Analysis could not be completed"],
+            "overall_cons": ["Please try again or contact support"],
+            "final_judgment": "Overall analysis could not be completed due to parsing error.",
+            "legal_insights": ["Please retry the request"],
+            "case_count": "Unknown",
+            "dominant_themes": ["Analysis incomplete"],
+            "raw": result
+        }
