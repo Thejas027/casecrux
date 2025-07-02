@@ -70,9 +70,9 @@ const AdvancedPdfSummarizer = () => {
         const formData = new FormData();
         formData.append('file', file);
         
-        // Use existing ML service endpoint
+        // Use backend proxy instead of direct ML service
         const response = await axios.post(
-          `${import.meta.env.VITE_ML_BACKEND_URL}/summarize`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/ml/summarize`,
           formData,
           {
             headers: {
@@ -82,11 +82,39 @@ const AdvancedPdfSummarizer = () => {
           }
         );
         
+        // Check if this is a fallback response
+        if (response.data.message && response.data.message.includes("Fallback response")) {
+          // Show less intrusive fallback mode notification
+          const fallbackNotification = document.createElement('div');
+          fallbackNotification.className = 'fixed top-4 right-4 bg-amber-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-sm';
+          fallbackNotification.innerHTML = `
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-amber-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium">Demo Mode Active</h3>
+                <p class="text-xs text-amber-200 mt-1">Using sample data - ML service unavailable</p>
+              </div>
+              <button class="ml-4 text-amber-300 hover:text-white" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+          `;
+          document.body.appendChild(fallbackNotification);
+          setTimeout(() => {
+            if (fallbackNotification.parentNode) {
+              fallbackNotification.parentNode.removeChild(fallbackNotification);
+            }
+          }, 8000);
+        }
+        
         if (response.data && response.data.summary) {
           summaries.push({
             fileName: file.name,
             summary: response.data.summary,
-            fileSize: file.size
+            fileSize: file.size,
+            metadata: response.data.summary.metadata || {}
           });
         }
       }
@@ -314,20 +342,134 @@ const AdvancedPdfSummarizer = () => {
           </div>
         )}
 
-        {/* Individual File Summaries */}
+        {/* Individual File Summaries with Enhanced Display */}
         {results && results.individual_summaries && (
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-xl font-bold mb-4">📄 Individual File Summaries</h3>
-            <div className="space-y-4">
-              {results.individual_summaries.map((item, index) => (
-                <div key={index} className="bg-gray-700 rounded-lg p-4">
-                  <h4 className="font-medium mb-2 text-blue-300">{item.fileName}</h4>
-                  <div className="text-gray-300 whitespace-pre-wrap">
-                    {item.summary.output_text || item.summary}
+          <div className="space-y-6">
+            {results.individual_summaries.map((item, index) => (
+              <div key={index} className="bg-gray-800 rounded-lg border border-gray-700">
+                {/* File Header */}
+                <div className="p-6 border-b border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-white flex items-center">
+                      <span className="mr-2">📄</span>
+                      {item.fileName}
+                    </h3>
+                    {item.metadata && (
+                      <div className="text-sm text-gray-400 space-x-4">
+                        {item.metadata.word_count && (
+                          <span>� {item.metadata.word_count} words</span>
+                        )}
+                        {item.metadata.page_count && (
+                          <span>📜 {item.metadata.page_count} pages</span>
+                        )}
+                        {item.metadata.confidence_score && (
+                          <span>🎯 {Math.round(item.metadata.confidence_score * 100)}% confidence</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Summary Content */}
+                <div className="p-6">
+                  {/* Check if summary has structured format */}
+                  {typeof item.summary === 'object' && item.summary.executive_summary ? (
+                    <div className="space-y-6">
+                      {/* Executive Summary */}
+                      <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                        <h4 className="text-lg font-bold text-blue-300 mb-3 flex items-center">
+                          <span className="mr-2">⭐</span>
+                          Executive Summary
+                        </h4>
+                        <p className="text-gray-300 leading-relaxed">
+                          {item.summary.executive_summary}
+                        </p>
+                      </div>
+
+                      {/* Key Findings */}
+                      {item.summary.key_findings && (
+                        <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
+                          <h4 className="text-lg font-bold text-green-300 mb-3 flex items-center">
+                            <span className="mr-2">🔍</span>
+                            Key Findings
+                          </h4>
+                          <ul className="space-y-2">
+                            {item.summary.key_findings.map((finding, idx) => (
+                              <li key={idx} className="text-gray-300 flex items-start">
+                                <span className="text-green-400 mr-2 mt-1">•</span>
+                                {finding}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Dual Summary Approach */}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {/* Abstractive Summary */}
+                        {item.summary.abstractive_summary && (
+                          <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+                            <h4 className="text-lg font-bold text-purple-300 mb-3 flex items-center">
+                              <span className="mr-2">🧠</span>
+                              Abstractive Summary
+                            </h4>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              {item.summary.abstractive_summary}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Extractive Summary */}
+                        {item.summary.extractive_summary && (
+                          <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-4">
+                            <h4 className="text-lg font-bold text-orange-300 mb-3 flex items-center">
+                              <span className="mr-2">📋</span>
+                              Extractive Summary
+                            </h4>
+                            <div className="space-y-2">
+                              {item.summary.extractive_summary.map((extract, idx) => (
+                                <div key={idx} className="text-gray-300 text-sm italic border-l-2 border-orange-500/50 pl-3">
+                                  "{extract}"
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Detailed Analysis */}
+                      {item.summary.detailed_analysis && (
+                        <div className="bg-gray-700 rounded-lg p-4">
+                          <h4 className="text-lg font-bold text-yellow-300 mb-3 flex items-center">
+                            <span className="mr-2">📚</span>
+                            Detailed Analysis
+                          </h4>
+                          <div className="grid md:grid-cols-2 gap-4 text-sm">
+                            {Object.entries(item.summary.detailed_analysis).map(([section, content]) => (
+                              <div key={section} className="space-y-2">
+                                <h5 className="font-medium text-yellow-200 capitalize">
+                                  {section.replace(/_/g, ' ')}:
+                                </h5>
+                                <p className="text-gray-300 leading-relaxed">
+                                  {content}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Fallback for simple string summaries */
+                    <div className="bg-gray-700 rounded-lg p-4">
+                      <div className="text-gray-300 whitespace-pre-wrap">
+                        {typeof item.summary === 'string' ? item.summary : JSON.stringify(item.summary, null, 2)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

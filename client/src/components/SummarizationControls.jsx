@@ -17,7 +17,7 @@ const SummarizationControls = ({
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_ML_BACKEND_URL}/summary_options`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/ml/summary_options`);
         if (response.ok) {
           const data = await response.json();
           setSummaryOptions(data);
