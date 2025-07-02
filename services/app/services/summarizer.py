@@ -7,15 +7,31 @@ from app.config import get_next_groq_api_key
 from app.utils.logger import logger
 
 map_prompt = PromptTemplate.from_template("""
-Write a **detailed and comprehensive summary** of the following content. Include important points, subtopics, and any nuanced information:
+Write a **detailed and comprehensive legal analysis** of the following content. Structure your analysis with clear sections and include:
 
-{text}
+1. **Executive Summary**: Brief overview of the main points
+2. **Key Legal Points**: Important legal concepts, arguments, and findings  
+3. **Evidence and Facts**: Relevant factual information and evidence presented
+4. **Legal Reasoning**: Court's analysis and reasoning process
+5. **Conclusions**: Final determinations and their implications
+
+Make sure to include specific details, legal terminology, and comprehensive insights that would be valuable for both detailed analysis and executive summaries.
+
+Content: {text}
 """)
 
 combine_prompt = PromptTemplate.from_template("""
-Given the summaries below, write a **detailed and structured summary** that preserves all meaningful insights:
+Given the detailed legal analyses below, create a **comprehensive and well-structured legal summary** that:
 
-{text}
+1. **Executive Summary**: Provides a clear overview of the entire case/document
+2. **Key Legal Points**: Consolidates all important legal concepts and arguments
+3. **Evidence and Facts**: Summarizes all relevant factual information
+4. **Legal Reasoning**: Explains the overall legal analysis and reasoning
+5. **Conclusions**: States the final determinations and their broader implications
+
+Ensure the summary is rich in detail and legal insight, suitable for both detailed review and executive briefing. Include specific legal terminology and comprehensive analysis.
+
+Analyses: {text}
 """)
 
 
@@ -31,7 +47,11 @@ def summarize_pdf(file_bytes: bytes) -> str:
             llm, chain_type="map_reduce", map_prompt=map_prompt, combine_prompt=combine_prompt)
         result = chain.invoke(chunks)
         logger.info("PDF summarized successfully", extra={"length": len(text)})
-        return result
+        
+        # Ensure we return a string for backward compatibility
+        if isinstance(result, dict):
+            return result.get('output_text', str(result))
+        return str(result)
     except Exception as e:
         logger.error(f"Error in summarize_pdf: {e}")
         raise

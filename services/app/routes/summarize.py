@@ -6,6 +6,10 @@ router = APIRouter()
 
 @router.post("/summarize")
 async def summarize(file: UploadFile = File(...)):
+    """
+    Enhanced summarization endpoint with richer output
+    Uses the existing working code but with enhanced prompts for better structure
+    """
     content = await file.read()
     summary = summarize_pdf(content)
     return {"summary": summary}
