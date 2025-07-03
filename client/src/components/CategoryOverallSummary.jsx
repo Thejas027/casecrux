@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ButtonSpinner } from "./Spinner";
 import TranslationSection from "./TranslationSection";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -119,7 +121,9 @@ function CategoryOverallSummary() {
             <h2 className="text-2xl font-semibold text-[#7f5af0]">Overall Summary:</h2>
             <button
               onClick={() => {
-                const summaryText = JSON.stringify(result.overall_summary, null, 2);
+                const summaryText = typeof result.overall_summary === "string" 
+                  ? result.overall_summary 
+                  : (result.overall_summary.output_text || 'No summary available');
                 const blob = new Blob([summaryText], { type: "text/plain" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
@@ -144,13 +148,43 @@ function CategoryOverallSummary() {
               Download Summary
             </button>
           </div>
-          <pre className="whitespace-pre-wrap bg-[#18181b] p-4 rounded text-[#e0e7ef] border border-[#7f5af0]">
-            {JSON.stringify(result.overall_summary, null, 2)}
-          </pre>
+          <div className="bg-[#18181b] p-4 rounded border border-[#7f5af0] text-[#e0e7ef]">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: ({ children }) => <h1 className="text-2xl font-bold text-[#2cb67d] mb-4">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-xl font-semibold text-[#7f5af0] mb-3">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-lg font-medium text-[#a786df] mb-2">{children}</h3>,
+                p: ({ children }) => <p className="text-[#e0e7ef] mb-3 leading-relaxed">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc pl-6 mb-3 text-[#e0e7ef]">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal pl-6 mb-3 text-[#e0e7ef]">{children}</ol>,
+                li: ({ children }) => <li className="mb-1">{children}</li>,
+                strong: ({ children }) => <strong className="text-[#2cb67d] font-semibold">{children}</strong>,
+                em: ({ children }) => <em className="text-[#7f5af0]">{children}</em>,
+                blockquote: ({ children }) => (
+                  <blockquote className="border-l-4 border-[#7f5af0] pl-4 italic text-[#a786df] my-4">
+                    {children}
+                  </blockquote>
+                ),
+                code: ({ inline, children }) => 
+                  inline ? (
+                    <code className="bg-[#2d2d2d] px-1 py-0.5 rounded text-[#7f5af0] font-mono text-sm">
+                      {children}
+                    </code>
+                  ) : (
+                    <pre className="bg-[#2d2d2d] p-4 rounded-lg overflow-x-auto">
+                      <code className="text-[#2cb67d] font-mono text-sm">{children}</code>
+                    </pre>
+                  ),
+              }}
+            >
+              {result.overall_summary.output_text || 'No summary available'}
+            </ReactMarkdown>
+          </div>
           
           {/* Translation Section */}
           <TranslationSection 
-            textToTranslate={JSON.stringify(result.overall_summary, null, 2)}
+            textToTranslate={result.overall_summary.output_text || 'No summary available'}
             title="Overall Summary Translation"
             className="mt-6"
             onError={(errorMsg) => setError(errorMsg)}

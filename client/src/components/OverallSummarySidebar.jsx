@@ -68,7 +68,7 @@ function OverallSummarySidebar() {
           const summaryText =
             typeof s.summary === "string"
               ? s.summary
-              : s.summary.output_text || JSON.stringify(s.summary, null, 2);
+              : s.summary.output_text || 'No summary available';
           return `PDF: ${s.pdfName || idx + 1}\n${summaryText}\n\n`;
         })
         .join("\n----------------------\n\n");

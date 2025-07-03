@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import PropTypes from 'prop-types';
 
 const AdvancedSummaryDisplay = ({ summaryData, isComparison = false }) => {
@@ -238,12 +240,37 @@ const AdvancedSummaryContent = ({ data }) => {
     <div className="space-y-4">
       <div className="bg-gray-700 rounded-lg p-6">
         <div className="prose prose-invert max-w-none">
-          <div 
-            className="text-gray-300 leading-relaxed whitespace-pre-wrap"
-            dangerouslySetInnerHTML={{ 
-              __html: data.summary.replace(/\n/g, '<br>') 
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({ children }) => <h1 className="text-2xl font-bold text-white mb-4">{children}</h1>,
+              h2: ({ children }) => <h2 className="text-xl font-semibold text-white mb-3">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-lg font-medium text-white mb-2">{children}</h3>,
+              p: ({ children }) => <p className="text-gray-300 mb-3 leading-relaxed">{children}</p>,
+              ul: ({ children }) => <ul className="list-disc pl-6 mb-3 text-gray-300">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal pl-6 mb-3 text-gray-300">{children}</ol>,
+              li: ({ children }) => <li className="mb-1">{children}</li>,
+              strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+              em: ({ children }) => <em className="text-blue-300">{children}</em>,
+              blockquote: ({ children }) => (
+                <blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-300 my-4">
+                  {children}
+                </blockquote>
+              ),
+              code: ({ inline, children }) => 
+                inline ? (
+                  <code className="bg-gray-600 px-1 py-0.5 rounded text-yellow-200 font-mono text-sm">
+                    {children}
+                  </code>
+                ) : (
+                  <pre className="bg-gray-800 p-4 rounded-lg overflow-x-auto">
+                    <code className="text-green-300 font-mono text-sm">{children}</code>
+                  </pre>
+                ),
             }}
-          />
+          >
+            {data.summary}
+          </ReactMarkdown>
         </div>
       </div>
       

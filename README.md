@@ -1,4 +1,4 @@
-# CaseCrux Legal PDF Summarizer
+# CaseCrux Legal Case Summarizer
 
 A modern web application for uploading, summarizing, and managing legal PDF documents. Built with React (frontend), Express/MongoDB (backend), and integrates with an LLM-powered summarization service.
 

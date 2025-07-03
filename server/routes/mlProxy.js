@@ -585,4 +585,164 @@ function createSectionWiseDemoResponse() {
   };
 }
 
+// Proxy route for category summarization
+router.post("/ml/summarize_category", async (req, res) => {
+  const startTime = Date.now();
+  console.log("\n🔄 POST /ml/summarize_category - Starting request");
+  console.log("📅 Timestamp:", new Date().toISOString());
+  console.log("🔗 Target URL:", `${ML_SERVICE_URL}/summarize_category`);
+  console.log("📝 Request body:", JSON.stringify(req.body, null, 2));
+  console.log("📁 Category:", req.body?.category || 'undefined');
+
+  try {
+    const response = await axios.post(`${ML_SERVICE_URL}/summarize_category`, req.body, {
+      timeout: 300000, // 5 minute timeout for category processing
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'CaseCrux-Server/1.0'
+      }
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Category summarization completed in ${duration}ms`);
+    logSuccess("POST /ml/summarize_category", response);
+    
+    res.json(response.data);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Category summarization failed after ${duration}ms`);
+    logError("POST /ml/summarize_category", error);
+    
+    // Enhanced error response with category context
+    res.status(error.response?.status || 500).json({
+      error: error.message,
+      details: error.response?.data || "Unknown error during category summarization",
+      category: req.body?.category,
+      timestamp: new Date().toISOString(),
+      duration: duration
+    });
+  }
+});
+
+// Proxy route for category overall summarization
+router.post("/ml/summarize_category_overall", async (req, res) => {
+  const startTime = Date.now();
+  console.log("\n🔄 POST /ml/summarize_category_overall - Starting request");
+  console.log("📅 Timestamp:", new Date().toISOString());
+  console.log("🔗 Target URL:", `${ML_SERVICE_URL}/summarize_category_overall`);
+  console.log("📝 Request body:", JSON.stringify(req.body, null, 2));
+  console.log("📁 Category:", req.body?.category || 'undefined');
+
+  try {
+    const response = await axios.post(`${ML_SERVICE_URL}/summarize_category_overall`, req.body, {
+      timeout: 600000, // 10 minute timeout for comprehensive analysis
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'CaseCrux-Server/1.0'
+      }
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Category overall summarization completed in ${duration}ms`);
+    logSuccess("POST /ml/summarize_category_overall", response);
+    
+    res.json(response.data);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Category overall summarization failed after ${duration}ms`);
+    logError("POST /ml/summarize_category_overall", error);
+    
+    // Enhanced error response with category context
+    res.status(error.response?.status || 500).json({
+      error: error.message,
+      details: error.response?.data || "Unknown error during category overall summarization",
+      category: req.body?.category,
+      timestamp: new Date().toISOString(),
+      duration: duration
+    });
+  }
+});
+
+// Proxy route for listing PDFs in category
+router.post("/ml/list_pdfs_in_category", async (req, res) => {
+  const startTime = Date.now();
+  console.log("\n🔄 POST /ml/list_pdfs_in_category - Starting request");
+  console.log("📅 Timestamp:", new Date().toISOString());
+  console.log("🔗 Target URL:", `${ML_SERVICE_URL}/list_pdfs_in_category`);
+  console.log("📝 Request body:", JSON.stringify(req.body, null, 2));
+  console.log("📁 Category:", req.body?.category || 'undefined');
+
+  try {
+    const response = await axios.post(`${ML_SERVICE_URL}/list_pdfs_in_category`, req.body, {
+      timeout: 30000, // 30 second timeout for listing
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'CaseCrux-Server/1.0'
+      }
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Category PDF listing completed in ${duration}ms`);
+    logSuccess("POST /ml/list_pdfs_in_category", response);
+    
+    res.json(response.data);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Category PDF listing failed after ${duration}ms`);
+    logError("POST /ml/list_pdfs_in_category", error);
+    
+    // Enhanced error response with category context
+    res.status(error.response?.status || 500).json({
+      error: error.message,
+      details: error.response?.data || "Unknown error during category PDF listing",
+      category: req.body?.category,
+      timestamp: new Date().toISOString(),
+      duration: duration
+    });
+  }
+});
+
+// Proxy route for category download summaries
+router.post("/ml/summarize_category_download", async (req, res) => {
+  const startTime = Date.now();
+  console.log("\n🔄 POST /ml/summarize_category_download - Starting request");
+  console.log("📅 Timestamp:", new Date().toISOString());
+  console.log("🔗 Target URL:", `${ML_SERVICE_URL}/summarize_category_download`);
+  console.log("📝 Request body:", JSON.stringify(req.body, null, 2));
+  console.log("📁 Category:", req.body?.category || 'undefined');
+
+  try {
+    const response = await axios.post(`${ML_SERVICE_URL}/summarize_category_download`, req.body, {
+      timeout: 600000, // 10 minute timeout for download processing
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'CaseCrux-Server/1.0'
+      }
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Category download summarization completed in ${duration}ms`);
+    logSuccess("POST /ml/summarize_category_download", response);
+    
+    res.json(response.data);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Category download summarization failed after ${duration}ms`);
+    logError("POST /ml/summarize_category_download", error);
+    
+    // Enhanced error response with category context
+    res.status(error.response?.status || 500).json({
+      error: error.message,
+      details: error.response?.data || "Unknown error during category download summarization",
+      category: req.body?.category,
+      timestamp: new Date().toISOString(),
+      duration: duration
+    });
+  }
+});
+
 module.exports = router;

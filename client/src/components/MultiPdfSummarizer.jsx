@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { ButtonSpinner } from "./Spinner";
 import TranslationSection from "./TranslationSection";
+import EnhancedSummaryRenderer from "./EnhancedSummaryRenderer";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -216,7 +219,7 @@ function MultiPdfSummarizer() {
                       results.summaries.forEach((s, idx) => {
                         allSummariesText += `${idx + 1}. ${s.pdfName}\n`;
                         allSummariesText += "-".repeat(30) + "\n";
-                        allSummariesText += (typeof s.summary === "string" ? s.summary : s.summary.output_text || JSON.stringify(s.summary)) + "\n\n";
+                        allSummariesText += (typeof s.summary === "string" ? s.summary : s.summary.output_text || 'No summary available') + "\n\n";
                       });
                     }
                     
@@ -279,7 +282,7 @@ function MultiPdfSummarizer() {
                         </h4>
                         <button
                           onClick={() => {
-                            const summaryText = typeof s.summary === "string" ? s.summary : s.summary.output_text || JSON.stringify(s.summary);
+                            const summaryText = typeof s.summary === "string" ? s.summary : s.summary.output_text || 'No summary available';
                             const blob = new Blob([summaryText], { type: "text/plain" });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement("a");
@@ -298,15 +301,84 @@ function MultiPdfSummarizer() {
                           Download
                         </button>
                       </div>
-                      <pre className="whitespace-pre-wrap text-[#e0e7ef] leading-relaxed">
-                        {typeof s.summary === "string"
-                          ? s.summary
-                          : s.summary.output_text || JSON.stringify(s.summary)}
-                      </pre>
+                      {/* Enhanced Summary Display */}
+                      <div className="bg-[#23272f] rounded-lg p-4 border border-[#7f5af0]/30">
+                        {typeof s.summary === "string" ? (
+                          <div className="prose prose-invert max-w-none">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                h1: ({ children }) => (
+                                  <h1 className="text-2xl font-bold text-[#7f5af0] mb-3 border-b border-[#7f5af0]/30 pb-2">
+                                    {children}
+                                  </h1>
+                                ),
+                                h2: ({ children }) => (
+                                  <h2 className="text-xl font-semibold text-[#2cb67d] mb-2 mt-4">
+                                    {children}
+                                  </h2>
+                                ),
+                                h3: ({ children }) => (
+                                  <h3 className="text-lg font-semibold text-[#e0e7ef] mb-2 mt-3">
+                                    {children}
+                                  </h3>
+                                ),
+                                p: ({ children }) => (
+                                  <p className="text-[#e0e7ef] mb-3 leading-relaxed">
+                                    {children}
+                                  </p>
+                                ),
+                                ul: ({ children }) => (
+                                  <ul className="list-disc pl-5 mb-3 space-y-1 text-[#e0e7ef]">
+                                    {children}
+                                  </ul>
+                                ),
+                                li: ({ children }) => (
+                                  <li className="text-[#e0e7ef] mb-1">
+                                    {children}
+                                  </li>
+                                ),
+                                strong: ({ children }) => (
+                                  <strong className="text-[#2cb67d] font-semibold">
+                                    {children}
+                                  </strong>
+                                ),
+                                em: ({ children }) => (
+                                  <em className="text-[#7f5af0] italic">
+                                    {children}
+                                  </em>
+                                ),
+                                hr: () => (
+                                  <hr className="border-[#7f5af0]/30 my-4" />
+                                ),
+                              }}
+                            >
+                              {s.summary}
+                            </ReactMarkdown>
+                          </div>
+                        ) : typeof s.summary === "object" && s.summary !== null ? (
+                          s.summary.summary ? (
+                            <div className="prose prose-invert max-w-none">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {s.summary.summary}
+                              </ReactMarkdown>
+                            </div>
+                          ) : (
+                            <EnhancedSummaryRenderer 
+                              summaryData={s.summary} 
+                              title={`${s.pdfName} Analysis`}
+                            />
+                          )
+                        ) : (
+                          <pre className="whitespace-pre-wrap text-[#e0e7ef] leading-relaxed">
+                            {s.summary.output_text || 'No summary available'}
+                          </pre>
+                        )}
+                      </div>
                       
                       {/* Translation Section for Individual Summary */}
                       <TranslationSection 
-                        textToTranslate={typeof s.summary === "string" ? s.summary : s.summary.output_text || JSON.stringify(s.summary)}
+                        textToTranslate={typeof s.summary === "string" ? s.summary : s.summary.output_text || 'No summary available'}
                         title={`${s.pdfName} Translation`}
                         className="mt-4"
                         onError={(errorMsg) => setError(errorMsg)}
@@ -340,9 +412,85 @@ function MultiPdfSummarizer() {
                   Download Final Summary
                 </button>
               </div>
-              <pre className="whitespace-pre-wrap bg-[#18181b] rounded-lg p-6 shadow text-[#e0e7ef] border border-[#7f5af0] leading-relaxed">
-                {results.finalSummary}
-              </pre>
+              {/* Enhanced Final Summary Display */}
+              <div className="bg-[#18181b] rounded-lg p-6 shadow border border-[#7f5af0]">
+                {typeof results.finalSummary === "string" ? (
+                  <div className="prose prose-invert max-w-none">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        h1: ({ children }) => (
+                          <h1 className="text-3xl font-bold text-[#7f5af0] mb-4 border-b border-[#7f5af0]/30 pb-2">
+                            {children}
+                          </h1>
+                        ),
+                        h2: ({ children }) => (
+                          <h2 className="text-2xl font-semibold text-[#2cb67d] mb-3 mt-6">
+                            {children}
+                          </h2>
+                        ),
+                        h3: ({ children }) => (
+                          <h3 className="text-xl font-semibold text-[#e0e7ef] mb-2 mt-4">
+                            {children}
+                          </h3>
+                        ),
+                        p: ({ children }) => (
+                          <p className="text-[#e0e7ef] mb-4 leading-relaxed">
+                            {children}
+                          </p>
+                        ),
+                        ul: ({ children }) => (
+                          <ul className="list-disc pl-6 mb-4 space-y-1 text-[#e0e7ef]">
+                            {children}
+                          </ul>
+                        ),
+                        li: ({ children }) => (
+                          <li className="text-[#e0e7ef] mb-1">
+                            {children}
+                          </li>
+                        ),
+                        strong: ({ children }) => (
+                          <strong className="text-[#2cb67d] font-semibold">
+                            {children}
+                          </strong>
+                        ),
+                        em: ({ children }) => (
+                          <em className="text-[#7f5af0] italic">
+                            {children}
+                          </em>
+                        ),
+                        blockquote: ({ children }) => (
+                          <blockquote className="border-l-4 border-[#7f5af0] pl-4 italic text-[#a786df] mb-4">
+                            {children}
+                          </blockquote>
+                        ),
+                        hr: () => (
+                          <hr className="border-[#7f5af0]/30 my-6" />
+                        ),
+                      }}
+                    >
+                      {results.finalSummary}
+                    </ReactMarkdown>
+                  </div>
+                ) : typeof results.finalSummary === "object" && results.finalSummary !== null ? (
+                  results.finalSummary.summary ? (
+                    <div className="prose prose-invert max-w-none">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {results.finalSummary.summary}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    <EnhancedSummaryRenderer 
+                      summaryData={results.finalSummary} 
+                      title="Final Summary Analysis"
+                    />
+                  )
+                ) : (
+                  <pre className="whitespace-pre-wrap text-[#e0e7ef] leading-relaxed">
+                    {results.finalSummary}
+                  </pre>
+                )}
+              </div>
               
               {/* Translation Section for Final Summary */}
               <TranslationSection 
