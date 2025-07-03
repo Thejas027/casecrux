@@ -14,6 +14,7 @@ from app.services.summarizer import summarize_pdf, summarize_overall
 from app.services.category_summarizer import summarize_category_pdfs, batch_summarize_pdfs
 import tempfile
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
@@ -95,7 +96,7 @@ High precedential value with clear implications for future litigation strategy
 
 ---
 *Demo Mode: Cloudinary service not available*
-*Analysis Date: {new Date().toISOString()}*
+*Analysis Date: {datetime.now().isoformat()}*
 *Confidence Level: High*
 *Processing Type: AI-Enhanced Legal Analysis*
 *Format: Structured Legal Summary*
