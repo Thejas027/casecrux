@@ -28,3 +28,8 @@ def get_next_groq_api_key():
     key = GROQ_API_KEYS[_groq_key_index]
     _groq_key_index = (_groq_key_index + 1) % len(GROQ_API_KEYS)
     return key
+
+
+def get_groq_keys_count():
+    """Return the number of available GROQ API keys"""
+    return len(GROQ_API_KEYS)
