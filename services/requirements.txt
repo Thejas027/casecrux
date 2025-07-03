@@ -8,3 +8,5 @@ uvicorn
 python-dotenv
 python-multipart
 transformers
+cloudinary
+requests
