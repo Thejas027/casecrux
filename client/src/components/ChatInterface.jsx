@@ -40,13 +40,27 @@ What would you like to know?`,
   const [isTyping, setIsTyping] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [userSummaries, setUserSummaries] = useState([]);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true); // Start closed by default
   const messagesEndRef = useRef(null);
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Handle ESC key to close chatbot
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && !isMinimized) {
+        setIsMinimized(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMinimized]);
 
   useEffect(() => {
     scrollToBottom();
@@ -168,12 +182,15 @@ What would you like to know?`,
       <div className="fixed bottom-4 right-4 z-50">
         <button
           onClick={() => setIsMinimized(false)}
-          className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+          className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 group hover:scale-105"
         >
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
           </svg>
-          <span className="text-sm font-medium">Legal Assistant</span>
+          <div className="flex flex-col text-left">
+            <span className="text-sm font-bold">Legal Assistant</span>
+            <span className="text-xs opacity-90">Ask me anything!</span>
+          </div>
         </button>
       </div>
     );
@@ -181,7 +198,7 @@ What would you like to know?`,
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <div className="bg-[#23272f] border border-[#7f5af0] rounded-lg shadow-2xl w-96 h-[600px] flex flex-col">
+      <div className="bg-[#23272f] border border-[#7f5af0] rounded-lg shadow-2xl w-[420px] h-[600px] flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#7f5af0] to-[#2cb67d] text-white p-4 rounded-t-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -193,9 +210,10 @@ What would you like to know?`,
           <button
             onClick={() => setIsMinimized(true)}
             className="hover:bg-white/20 p-1 rounded"
+            title="Close (ESC)"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
         </div>

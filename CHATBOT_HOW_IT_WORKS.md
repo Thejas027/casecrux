@@ -1,4 +1,9 @@
-CaseCrux Chatbot: How It Works 🤖
+# CaseCrux Chatbot: How It Works 🤖
+
+## Overview
+The CaseCrux chatbot is a sophisticated AI system that answers questions based on multiple data sources and fallback mechanisms. The chatbot starts **closed by default** and opens when users click the "Legal Assistant" button, ensuring a non-intrusive user experience.
+
+## 🔄 Response Generation Flowux Chatbot: How It Works 🤖
 
 ## Overview
 The CaseCrux chatbot is a sophisticated AI system that answers questions based on multiple data sources and fallback mechanisms. Here's exactly how it generates responses:
@@ -224,5 +229,31 @@ Based on your uploaded contracts, I've identified several key risk areas:
 - References existing summaries and analyses
 - Suggests using other CaseCrux tools
 - Maintains consistency with platform terminology
+
+## 🎨 User Interface Behavior
+
+### **Default State: Closed**
+- The chatbot starts **minimized by default** when the page loads
+- Shows a floating "Legal Assistant" button in the bottom-right corner
+- Button includes hover effects and clear call-to-action text
+- Non-intrusive design that doesn't block the main interface
+
+### **Opening the Chat**
+- Click the "Legal Assistant" button to open the full chat interface
+- Smooth animation transitions from button to chat window
+- Maintains conversation history across open/close cycles
+- Context and document awareness preserved
+
+### **Chat Interface Features**
+- **Professional Design**: Matches CaseCrux brand colors and styling
+- **Responsive Layout**: Optimized for different screen sizes
+- **Markdown Support**: Rich text formatting for legal content
+- **Real-time Typing**: Shows when assistant is generating responses
+- **Minimize Option**: Can be closed back to button state anytime
+
+### **Page Navigation**
+- Floating chat available on all pages except dedicated `/chat` page
+- State preservation across page navigation
+- Automatic context loading for document-aware responses
 
 This multi-layered approach ensures users always get helpful responses, whether through cutting-edge AI or intelligent fallbacks, all based on their actual legal documents and analysis history!
