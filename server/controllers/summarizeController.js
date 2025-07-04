@@ -103,18 +103,120 @@ const getOverallSummaryController = async (req, res) => {
       { summaries },
       { timeout: 300000 }
     );
-    let overallSummary = response.data.overall_summary || response.data;
+    let overallSummaryData = response.data.overall_summary || response.data;
+    
+    console.log("✅ ML Service Response:", JSON.stringify(overallSummaryData, null, 2));
+    
+    // Convert the complex JSON structure to markdown format
+    let overallSummary;
+    if (typeof overallSummaryData === 'string') {
+      overallSummary = overallSummaryData;
+    } else if (overallSummaryData && typeof overallSummaryData === 'object') {
+      // Convert the structured data to readable markdown
+      overallSummary = `# Overall Legal Analysis Summary
+
+## Category Overview
+${overallSummaryData.category_explanation || 'No category explanation available'}
+
+## Individual Cases Analysis
+`;
+      
+      if (overallSummaryData.individual_cases && overallSummaryData.individual_cases.length > 0) {
+        overallSummaryData.individual_cases.forEach((caseItem, index) => {
+          overallSummary += `
+### Case ${index + 1}: ${caseItem.case_name || 'Unnamed Case'}
+
+**Key Points:**
+${caseItem.key_points ? caseItem.key_points.map(point => `• ${point}`).join('\n') : '• No key points available'}
+
+**Pros:**
+${caseItem.pros ? caseItem.pros.map(pro => `• ${pro}`).join('\n') : '• No pros listed'}
+
+**Cons:**
+${caseItem.cons ? caseItem.cons.map(con => `• ${con}`).join('\n') : '• No cons listed'}
+
+**Final Judgment:** ${caseItem.final_judgment || 'No judgment provided'}
+
+**Judgment Against:** ${caseItem.judgment_against || 'Not specified'}
+
+---
+`;
+        });
+      }
+      
+      if (overallSummaryData.overall_summary) {
+        overallSummary += `
+## Overall Summary
+
+**Dominant Legal Themes:**
+${overallSummaryData.overall_summary.dominant_legal_themes ? 
+  overallSummaryData.overall_summary.dominant_legal_themes.map(theme => `• ${theme}`).join('\n') : 
+  '• No themes identified'}
+
+**Common Pros:**
+${overallSummaryData.overall_summary.common_pros ? 
+  overallSummaryData.overall_summary.common_pros.map(pro => `• ${pro}`).join('\n') : 
+  '• No common pros identified'}
+
+**Common Cons:**
+${overallSummaryData.overall_summary.common_cons ? 
+  overallSummaryData.overall_summary.common_cons.map(con => `• ${con}`).join('\n') : 
+  '• No common cons identified'}
+
+**Overall Assessment:** ${overallSummaryData.overall_summary.overall_assessment || 'No assessment provided'}
+
+**Success Rate:** ${overallSummaryData.overall_summary.success_rate || 'Not determined'}
+`;
+      }
+      
+      if (overallSummaryData.legal_insights) {
+        overallSummary += `
+## Legal Insights
+
+**Key Precedents:**
+${overallSummaryData.legal_insights.key_precedents ? 
+  overallSummaryData.legal_insights.key_precedents.map(precedent => `• ${precedent}`).join('\n') : 
+  '• No precedents identified'}
+
+**Strategic Recommendations:**
+${overallSummaryData.legal_insights.strategic_recommendations ? 
+  overallSummaryData.legal_insights.strategic_recommendations.map(rec => `• ${rec}`).join('\n') : 
+  '• No recommendations provided'}
+
+**Risk Factors:**
+${overallSummaryData.legal_insights.risk_factors ? 
+  overallSummaryData.legal_insights.risk_factors.map(risk => `• ${risk}`).join('\n') : 
+  '• No risk factors identified'}
+
+**Emerging Trends:**
+${overallSummaryData.legal_insights.emerging_trends ? 
+  overallSummaryData.legal_insights.emerging_trends.map(trend => `• ${trend}`).join('\n') : 
+  '• No trends identified'}
+`;
+      }
+      
+      if (overallSummaryData.metadata) {
+        overallSummary += `
+## Analysis Metadata
+- **Total Cases:** ${overallSummaryData.metadata.total_cases || 'Unknown'}
+- **Analysis Scope:** ${overallSummaryData.metadata.analysis_scope || 'Not specified'}
+`;
+      }
+      
+    } else {
+      overallSummary = "Unable to process overall summary - unexpected data format";
+    }
+    
     // Save to MultiSummary collection (history)
     const multiSummaryDoc = await MultiSummary.create({
       caseId: req.body?.caseId || `case-${Date.now()}`,
       summaries,
-      finalSummary:
-        typeof overallSummary === "string"
-          ? overallSummary
-          : JSON.stringify(overallSummary),
-      pros: overallSummary.pros || [],
-      cons: overallSummary.cons || [],
+      finalSummary: overallSummary,
+      pros: overallSummaryData.overall_summary?.common_pros || [],
+      cons: overallSummaryData.overall_summary?.common_cons || [],
     });
+    
+    console.log("✅ Formatted overall summary:", overallSummary.substring(0, 200) + "...");
     res.json({ overallSummary, multiSummaryId: multiSummaryDoc._id });
   } catch (error) {
     console.error(
