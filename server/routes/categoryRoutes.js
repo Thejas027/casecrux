@@ -3,7 +3,7 @@ const axios = require("axios");
 const router = express.Router();
 
 // Set your ML service URL
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "https://casecrux.onrender.com";
 
 // 🔧 DEBUG: Log initialization
 console.log("🚀 Category Routes Initialized");
