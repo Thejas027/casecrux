@@ -90,22 +90,41 @@ const getAllSummariesController = async (req, res) => {
 
 // GET /api/overall-summary - summarize all summaries using ML service and store in MultiSummary
 const getOverallSummaryController = async (req, res) => {
+  console.log("\n🔄 GET /api/overall-summary - Starting request");
+  console.log("📅 Timestamp:", new Date().toISOString());
+  
   try {
     const summaries = await Summary.find(
       {},
       { summary: 1, pdfName: 1, _id: 0 }
     ).sort({ createdAt: 1 });
-    if (!summaries.length)
-      return res.json({ overallSummary: "No summaries available." });
+    
+    console.log("📊 Found summaries count:", summaries.length);
+    
+    if (!summaries.length) {
+      const message = "No summaries available.";
+      console.log("⚠️ No summaries found, returning message:", message);
+      return res.json({ overallSummary: message });
+    }
+    
+    console.log("🔄 Calling ML service for overall summary...");
+    console.log("📝 Summaries to process:", summaries.map(s => ({ pdfName: s.pdfName, summaryLength: s.summary?.length || 0 })));
+    
     const mlServiceUrl = "https://casecrux.onrender.com/summarize_overall";
     const response = await axios.post(
       mlServiceUrl,
       { summaries },
       { timeout: 300000 }
     );
+    
+    console.log("✅ ML Service Response Status:", response.status);
+    console.log("✅ ML Service Response Headers:", response.headers['content-type']);
+    
     let overallSummaryData = response.data.overall_summary || response.data;
     
-    console.log("✅ ML Service Response:", JSON.stringify(overallSummaryData, null, 2));
+    console.log("✅ ML Service Response Data Type:", typeof overallSummaryData);
+    console.log("✅ ML Service Response Preview:", JSON.stringify(overallSummaryData).substring(0, 300) + "...");
+    console.log("✅ ML Service Full Response:", JSON.stringify(overallSummaryData, null, 2));
     
     // Convert the complex JSON structure to markdown format
     let overallSummary;
@@ -216,14 +235,19 @@ ${overallSummaryData.legal_insights.emerging_trends ?
       cons: overallSummaryData.overall_summary?.common_cons || [],
     });
     
-    console.log("✅ Formatted overall summary:", overallSummary.substring(0, 200) + "...");
+    console.log("✅ Formatted overall summary length:", overallSummary.length);
+    console.log("✅ Formatted overall summary preview:", overallSummary.substring(0, 200) + "...");
+    console.log("✅ MultiSummary saved with ID:", multiSummaryDoc._id);
+    console.log("✅ Sending response with overallSummary field...");
+    
     res.json({ overallSummary, multiSummaryId: multiSummaryDoc._id });
   } catch (error) {
     console.error(
-      "Error in getOverallSummaryController:",
-      error.message,
-      error.response?.data
+      "❌ Error in getOverallSummaryController:",
+      error.message
     );
+    console.error("📊 Error response data:", error.response?.data);
+    console.error("📊 Error stack:", error.stack);
     res.status(500).json({ error: "Failed to get overall summary." });
   }
 };

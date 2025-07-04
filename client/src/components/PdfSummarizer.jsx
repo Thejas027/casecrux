@@ -24,6 +24,16 @@ function PdfSummarizer() {
     fetchSummaries();
   }, []);
 
+  // Debug: Track overallSummary state changes
+  useEffect(() => {
+    console.log("🔍 overallSummary state changed:", {
+      length: overallSummary?.length || 0,
+      type: typeof overallSummary,
+      hasContent: !!overallSummary,
+      preview: overallSummary?.substring?.(0, 100) || 'N/A'
+    });
+  }, [overallSummary]);
+
   const fetchSummaries = async () => {
     try {
       const res = await axios.get(`${BACKEND_URL}/api/summaries`);
@@ -118,7 +128,20 @@ function PdfSummarizer() {
       console.log("✅ Overall summary data:", res.data);
       console.log("✅ overallSummary field:", res.data.overallSummary);
       console.log("✅ Type of overallSummary:", typeof res.data.overallSummary);
-      setOverallSummary(res.data.overallSummary || "");
+      
+      const summaryText = res.data.overallSummary || "";
+      setOverallSummary(summaryText);
+      
+      // Also refresh the summaries list to update any history/sidebar
+      await fetchSummaries();
+      
+      // Add a small delay to ensure state updates are processed
+      setTimeout(() => {
+        if (!summaryText) {
+          console.warn("⚠️ Overall summary is empty after successful response");
+          setError("Received empty overall summary from server.");
+        }
+      }, 100);
     } catch (err) {
       setError("Failed to get overall summary.");
       console.error("Error fetching overall summary:", err.message);
@@ -420,10 +443,27 @@ function PdfSummarizer() {
             </button>
           </div>
         </div>
+        {/* Debug: Show processing status */}
         {fetchingOverallSummary && (
-          <InlineSpinner text="Generating overall summary..." className="mt-4" />
+          <div className="mt-4 p-4 bg-blue-900/30 border border-blue-500 rounded-lg">
+            <InlineSpinner text="Generating overall summary..." />
+          </div>
         )}
-        {overallSummary && (
+        
+        {/* Debug: Show when summary processing is complete */}
+        {!fetchingOverallSummary && (
+          <div className="mt-4 p-4 bg-gray-900/50 border border-gray-500 rounded-lg text-gray-300 text-sm">
+            <p><strong>Debug Info:</strong></p>
+            <p>• Fetching: {fetchingOverallSummary ? 'Yes' : 'No'}</p>
+            <p>• Summary exists: {overallSummary ? 'Yes' : 'No'}</p>
+            <p>• Summary type: {typeof overallSummary}</p>
+            <p>• Summary length: {overallSummary?.length || 0}</p>
+            <p>• Summary starts with: {overallSummary?.substring?.(0, 50) || 'N/A'}</p>
+            <p>• Will show summary section: {(overallSummary && overallSummary.trim()) ? 'Yes' : 'No'}</p>
+          </div>
+        )}
+        
+        {overallSummary && overallSummary.trim() && (
           <div className="mt-8 bg-[#23272f] border border-[#2cb67d] rounded-xl px-8 pt-6 pb-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
               <h2 className="text-2xl font-bold text-[#2cb67d] flex items-center gap-2">
@@ -454,39 +494,49 @@ function PdfSummarizer() {
               </button>
             </div>
             <div className="bg-[#18181b] p-4 rounded border border-[#2cb67d] text-[#e0e7ef]">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  h1: ({ children }) => <h1 className="text-2xl font-bold text-[#2cb67d] mb-4">{children}</h1>,
-                  h2: ({ children }) => <h2 className="text-xl font-semibold text-[#7f5af0] mb-3">{children}</h2>,
-                  h3: ({ children }) => <h3 className="text-lg font-medium text-[#a786df] mb-2">{children}</h3>,
-                  p: ({ children }) => <p className="text-[#e0e7ef] mb-3 leading-relaxed">{children}</p>,
-                  ul: ({ children }) => <ul className="list-disc pl-6 mb-3 text-[#e0e7ef]">{children}</ul>,
-                  ol: ({ children }) => <ol className="list-decimal pl-6 mb-3 text-[#e0e7ef]">{children}</ol>,
-                  li: ({ children }) => <li className="mb-1">{children}</li>,
-                  strong: ({ children }) => <strong className="text-[#2cb67d] font-semibold">{children}</strong>,
-                  em: ({ children }) => <em className="text-[#7f5af0]">{children}</em>,
-                  blockquote: ({ children }) => (
-                    <blockquote className="border-l-4 border-[#7f5af0] pl-4 italic text-[#a786df] my-4">
-                      {children}
-                    </blockquote>
-                  ),
-                  code: ({ inline, children }) => 
-                    inline ? (
-                      <code className="bg-[#2d2d2d] px-1 py-0.5 rounded text-[#7f5af0] font-mono text-sm">
+              {/* Debug info */}
+              <div className="mb-2 p-2 bg-gray-800/50 rounded text-xs text-gray-400">
+                Summary type: {typeof overallSummary} | Length: {overallSummary?.length || 0} chars
+              </div>
+              
+              {typeof overallSummary === "string" && overallSummary.trim() ? (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ children }) => <h1 className="text-2xl font-bold text-[#2cb67d] mb-4">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-xl font-semibold text-[#7f5af0] mb-3">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-lg font-medium text-[#a786df] mb-2">{children}</h3>,
+                    p: ({ children }) => <p className="text-[#e0e7ef] mb-3 leading-relaxed">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc pl-6 mb-3 text-[#e0e7ef]">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-6 mb-3 text-[#e0e7ef]">{children}</ol>,
+                    li: ({ children }) => <li className="mb-1">{children}</li>,
+                    strong: ({ children }) => <strong className="text-[#2cb67d] font-semibold">{children}</strong>,
+                    em: ({ children }) => <em className="text-[#7f5af0]">{children}</em>,
+                    blockquote: ({ children }) => (
+                      <blockquote className="border-l-4 border-[#7f5af0] pl-4 italic text-[#a786df] my-4">
                         {children}
-                      </code>
-                    ) : (
-                      <pre className="bg-[#2d2d2d] p-4 rounded-lg overflow-x-auto">
-                        <code className="text-[#2cb67d] font-mono text-sm">{children}</code>
-                      </pre>
+                      </blockquote>
                     ),
-                }}
-              >
-                {typeof overallSummary === "string"
-                  ? overallSummary
-                  : (overallSummary.output_text || 'No summary available')}
-              </ReactMarkdown>
+                    code: ({ inline, children }) => 
+                      inline ? (
+                        <code className="bg-[#2d2d2d] px-1 py-0.5 rounded text-[#7f5af0] font-mono text-sm">
+                          {children}
+                        </code>
+                      ) : (
+                        <pre className="bg-[#2d2d2d] p-4 rounded-lg overflow-x-auto">
+                          <code className="text-[#2cb67d] font-mono text-sm">{children}</code>
+                        </pre>
+                      ),
+                  }}
+                >
+                  {overallSummary}
+                </ReactMarkdown>
+              ) : (
+                <div className="text-red-400 p-4 bg-red-900/20 border border-red-500 rounded">
+                  <p>⚠️ Unable to render summary. Content type: {typeof overallSummary}</p>
+                  <p>Content preview: {JSON.stringify(overallSummary).substring(0, 200)}...</p>
+                </div>
+              )}
             </div>
 
             {/* Translation Section for Overall Summary */}
