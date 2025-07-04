@@ -1,4 +1,4 @@
-# CaseCrux Chatbot: How It Works 🤖
+CaseCrux Chatbot: How It Works 🤖
 
 ## Overview
 The CaseCrux chatbot is a sophisticated AI system that answers questions based on multiple data sources and fallback mechanisms. Here's exactly how it generates responses:
