@@ -11,69 +11,76 @@ import CategoryBatchWithTranslationHistory from "./components/CategoryBatchWithT
 import BatchSummaryHistorySidebar from "./components/BatchSummaryHistorySidebar";
 import BatchSummaryDetail from "./components/BatchSummaryDetail";
 import AdvancedPdfSummarizer from "./components/AdvancedPdfSummarizer";
+import ChatInterface from "./components/ChatInterface";
+import ChatPage from "./components/ChatPage";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route
-          path="/pdf-summarizer"
-          element={
-            <div className="flex min-h-screen">
-              <OverallSummarySidebar />
-              <div className="flex-1">
-                <PdfSummarizer />
+      <div className="relative">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route
+            path="/pdf-summarizer"
+            element={
+              <div className="flex min-h-screen">
+                <OverallSummarySidebar />
+                <div className="flex-1">
+                  <PdfSummarizer />
+                </div>
               </div>
-            </div>
-          }
-        />
-        <Route
-          path="/summary/:id"
-          element={
-            <div className="flex min-h-screen">
-              <OverallSummarySidebar />
-              <div className="flex-1">
-                <SummaryDetail />
+            }
+          />
+          <Route
+            path="/summary/:id"
+            element={
+              <div className="flex min-h-screen">
+                <OverallSummarySidebar />
+                <div className="flex-1">
+                  <SummaryDetail />
+                </div>
               </div>
-            </div>
-          }
-        />
-        <Route
-          path="/overall-summary/:id"
-          element={
-            <div className="flex min-h-screen">
-              <OverallSummarySidebar />
-              <div className="flex-1">
-                <OverallSummaryDetail />
+            }
+          />
+          <Route
+            path="/overall-summary/:id"
+            element={
+              <div className="flex min-h-screen">
+                <OverallSummarySidebar />
+                <div className="flex-1">
+                  <OverallSummaryDetail />
+                </div>
               </div>
-            </div>
-          }
-        />
-        <Route
-          path="/category-download-summary"
-          element={<CategoryDownloadSummary />}
-        />
-        <Route
-          path="/advanced-pdf-summarizer"
-          element={<AdvancedPdfSummarizer />}
-        />
-        <Route
-          path="/category-batch-pdf-summarizer"
-          element={<CategoryBatchWithTranslationHistory />}
-        />
-        <Route
-          path="/batch-summary/:id"
-          element={
-            <div className="flex min-h-screen">
-              <BatchSummaryHistorySidebar />
-              <div className="flex-1">
-                <BatchSummaryDetail />
+            }
+          />
+          <Route
+            path="/category-download-summary"
+            element={<CategoryDownloadSummary />}
+          />
+          <Route
+            path="/advanced-pdf-summarizer"
+            element={<AdvancedPdfSummarizer />}
+          />
+          <Route
+            path="/category-batch-pdf-summarizer"
+            element={<CategoryBatchWithTranslationHistory />}
+          />
+          <Route
+            path="/batch-summary/:id"
+            element={
+              <div className="flex min-h-screen">
+                <BatchSummaryHistorySidebar />
+                <div className="flex-1">
+                  <BatchSummaryDetail />
+                </div>
               </div>
-            </div>
-          }
-        />
-      </Routes>
+            }
+          />
+        </Routes>
+        {/* Global Chat Interface - available on all pages */}
+        <ChatInterface />
+      </div>
     </BrowserRouter>
   );
 }

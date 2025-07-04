@@ -69,5 +69,9 @@ app.use("/api", allCategories);
 const categoryRoutes = require("./routes/categoryRoutes");
 app.use("/api", categoryRoutes);
 
+// Register the chatbot routes
+const chatbotRoutes = require("./routes/chatbot");
+app.use("/api/chat", chatbotRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
