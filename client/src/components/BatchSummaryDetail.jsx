@@ -36,27 +36,80 @@ function BatchSummaryDetail() {
     }
   }, [id]);
 
-  // Helper function to prepare summary text for translation
+  // Helper function to prepare complete summary text for translation
   const prepareSummaryForTranslation = (summaryData) => {
     if (!summaryData || !summaryData.summary) return "";
     
     const { summary: summaryContent } = summaryData;
-    let text = "";
+    let textParts = [];
     
+    // Add category and creation info
+    if (summaryData.category) {
+      textParts.push(`Category: ${summaryData.category}`);
+    }
+    
+    if (summaryData.createdAt) {
+      const date = new Date(summaryData.createdAt).toLocaleDateString();
+      textParts.push(`Date: ${date}`);
+    }
+    
+    // Add pros section
     if (summaryContent.pros && summaryContent.pros.length > 0) {
-      text += `Pros:\n${summaryContent.pros.join("\n")}`;
-    }
-    if (summaryContent.cons && summaryContent.cons.length > 0) {
-      text += `\n\nCons:\n${summaryContent.cons.join("\n")}`;
-    }
-    if (summaryContent.final_judgment) {
-      text += `\n\nFinal Judgment:\n${summaryContent.final_judgment}`;
-    }
-    if (summaryContent.raw) {
-      text += `\n\nAdditional Details:\n${summaryContent.raw}`;
+      textParts.push(`\n=== PROS ===`);
+      summaryContent.pros.forEach((pro, index) => {
+        textParts.push(`${index + 1}. ${pro}`);
+      });
     }
     
-    return text;
+    // Add cons section
+    if (summaryContent.cons && summaryContent.cons.length > 0) {
+      textParts.push(`\n=== CONS ===`);
+      summaryContent.cons.forEach((con, index) => {
+        textParts.push(`${index + 1}. ${con}`);
+      });
+    }
+    
+    // Add final judgment section
+    if (summaryContent.final_judgment) {
+      textParts.push(`\n=== FINAL JUDGMENT ===`);
+      textParts.push(summaryContent.final_judgment);
+    }
+    
+    // Add additional details/raw content
+    if (summaryContent.raw) {
+      textParts.push(`\n=== ADDITIONAL DETAILS ===`);
+      textParts.push(summaryContent.raw);
+    }
+    
+    // Add overall analysis if available
+    if (summaryContent.overall_analysis) {
+      textParts.push(`\n=== OVERALL ANALYSIS ===`);
+      textParts.push(summaryContent.overall_analysis);
+    }
+    
+    // Add key findings if available
+    if (summaryContent.key_findings && summaryContent.key_findings.length > 0) {
+      textParts.push(`\n=== KEY FINDINGS ===`);
+      summaryContent.key_findings.forEach((finding, index) => {
+        textParts.push(`${index + 1}. ${finding}`);
+      });
+    }
+    
+    // Add recommendations if available
+    if (summaryContent.recommendations && summaryContent.recommendations.length > 0) {
+      textParts.push(`\n=== RECOMMENDATIONS ===`);
+      summaryContent.recommendations.forEach((rec, index) => {
+        textParts.push(`${index + 1}. ${rec}`);
+      });
+    }
+    
+    // Join all parts with proper spacing
+    const fullText = textParts.join('\n').trim();
+    
+    console.log(`📋 Prepared ${fullText.length} characters for translation from batch summary`);
+    console.log(`📝 Sections included: ${textParts.filter(part => part.includes('===')).length} main sections`);
+    
+    return fullText;
   };
 
   // Handle translation completion with saving to history

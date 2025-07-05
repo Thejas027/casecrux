@@ -53,28 +53,68 @@ function TranslationSection({
       return;
     }
     
+    // Validate text length
+    if (textToTranslate.trim().length === 0) {
+      const errorMsg = "Cannot translate empty text.";
+      setError(errorMsg);
+      if (onError) onError(errorMsg);
+      return;
+    }
+    
+    if (textToTranslate.length > 10000) {
+      const errorMsg = "Text is too long for translation. Please try with shorter text (max 10,000 characters).";
+      setError(errorMsg);
+      if (onError) onError(errorMsg);
+      return;
+    }
+    
     setTranslating(true);
     setTranslatedText("");
     setError("");
     
     try {
+      console.log(`🌐 Starting translation to ${selectedLanguage}, text length: ${textToTranslate.length}`);
+      
       const response = await axios.post(
-        `${BACKEND_URL}/api/translate-summary`,
+        `${BACKEND_URL}/api/translate`,
         { summary: textToTranslate, targetLang: selectedLanguage },
-        { timeout: 30000 }
+        { timeout: 60000 } // Increased timeout for long texts
       );
       
       if (response.data && response.data.translated) {
         setTranslatedText(response.data.translated);
+        
+        // Show warnings if any chunks failed
+        if (response.data.warnings) {
+          const warningMsg = `Translation completed with some issues: ${response.data.warnings.message}`;
+          console.warn("Translation warnings:", response.data.warnings);
+          setError(warningMsg); // Show as warning, not error
+        }
+        
         if (onTranslationComplete) {
           onTranslationComplete(response.data.translated, selectedLanguage);
         }
+        
+        console.log(`✅ Translation successful. ${response.data.successfulChunks}/${response.data.chunksProcessed} chunks translated`);
       } else {
         throw new Error("No translated text received from server");
       }
     } catch (err) {
       console.error("Translation error:", err);
-      const errorMessage = err.response?.data?.error || err.message || "Failed to translate text. Please try again.";
+      
+      let errorMessage;
+      if (err.code === 'ECONNABORTED') {
+        errorMessage = "Translation timed out. The text might be too long. Please try with shorter text.";
+      } else if (err.response?.status === 500) {
+        errorMessage = `Server error: ${err.response?.data?.details || "Translation service temporarily unavailable"}`;
+      } else if (err.response?.status === 400) {
+        errorMessage = `Invalid request: ${err.response?.data?.details || "Please check your input"}`;
+      } else if (!navigator.onLine) {
+        errorMessage = "No internet connection. Please check your network and try again.";
+      } else {
+        errorMessage = err.response?.data?.error || err.message || "Failed to translate text. Please try again.";
+      }
+      
       setError(errorMessage);
       if (onError) onError(errorMessage);
     } finally {

@@ -3,7 +3,7 @@ const axios = require("axios");
 const router = express.Router();
 
 // Maximum length for translation chunks
-const MAX_CHUNK_SIZE = 450; // Slightly less than 500 to be safe
+const MAX_CHUNK_SIZE = 400; // Reduced for better reliability
 
 // Language code mapping for common Indian languages not directly supported by LibreTranslate
 const LANGUAGE_MAPPING = {
@@ -21,79 +21,126 @@ const LANGUAGE_MAPPING = {
 function splitTextIntoChunks(text, maxLength) {
   // If text is short enough, return it as a single chunk
   if (text.length <= maxLength) {
-    return [text];
+    return [text.trim()];
   }
+  
+  console.log(`📝 Splitting text of ${text.length} characters into chunks of max ${maxLength} characters`);
   
   const chunks = [];
   let currentChunk = '';
   
-  // Split by paragraphs first
-  const paragraphs = text.split(/\n\n+/);
+  // Clean up the text first - remove extra whitespace and normalize line breaks
+  const cleanText = text.replace(/\r\n/g, '\n').replace(/\s+/g, ' ').trim();
+  
+  // Split by paragraphs first (double line breaks or markdown headers)
+  const paragraphs = cleanText.split(/\n\s*\n|(?=#{1,6}\s)/);
   
   for (const paragraph of paragraphs) {
+    const trimmedParagraph = paragraph.trim();
+    if (!trimmedParagraph) continue;
+    
     // If single paragraph exceeds limit, split by sentences
-    if (paragraph.length > maxLength) {
-      // Split by common sentence endings
-      const sentences = paragraph.split(/(?<=[.!?])\s+/);
+    if (trimmedParagraph.length > maxLength) {
+      // First, add any existing chunk
+      if (currentChunk.length > 0) {
+        chunks.push(currentChunk.trim());
+        currentChunk = '';
+      }
+      
+      // Split by sentences - improved sentence detection
+      const sentences = trimmedParagraph.split(/(?<=[.!?])\s+(?=[A-Z])/);
       
       for (const sentence of sentences) {
+        const trimmedSentence = sentence.trim();
+        if (!trimmedSentence) continue;
+        
         // If adding this sentence would exceed max length, start a new chunk
-        if (currentChunk.length + sentence.length > maxLength) {
+        if (currentChunk.length + trimmedSentence.length + 1 > maxLength) {
           if (currentChunk.length > 0) {
-            chunks.push(currentChunk);
+            chunks.push(currentChunk.trim());
             currentChunk = '';
           }
           
-          // If a single sentence is longer than maxLength, split by word boundary
-          if (sentence.length > maxLength) {
-            let remainingSentence = sentence;
-            while (remainingSentence.length > 0) {
-              let chunkEndIndex = maxLength;
+          // If a single sentence is still longer than maxLength, split by phrases
+          if (trimmedSentence.length > maxLength) {
+            const phrases = trimmedSentence.split(/[,;:()]/);
+            for (const phrase of phrases) {
+              const trimmedPhrase = phrase.trim();
+              if (!trimmedPhrase) continue;
               
-              // Try to find a word boundary
-              if (remainingSentence.length > maxLength) {
-                const lastSpace = remainingSentence.substring(0, maxLength).lastIndexOf(' ');
-                if (lastSpace > 0) {
-                  chunkEndIndex = lastSpace;
+              if (currentChunk.length + trimmedPhrase.length + 1 > maxLength) {
+                if (currentChunk.length > 0) {
+                  chunks.push(currentChunk.trim());
+                  currentChunk = '';
                 }
+                
+                // If even a phrase is too long, split by words
+                if (trimmedPhrase.length > maxLength) {
+                  const words = trimmedPhrase.split(/\s+/);
+                  for (const word of words) {
+                    if (currentChunk.length + word.length + 1 > maxLength) {
+                      if (currentChunk.length > 0) {
+                        chunks.push(currentChunk.trim());
+                        currentChunk = word;
+                      } else {
+                        // Single word longer than max length - force include it
+                        chunks.push(word);
+                      }
+                    } else {
+                      currentChunk += (currentChunk ? ' ' : '') + word;
+                    }
+                  }
+                } else {
+                  currentChunk = trimmedPhrase;
+                }
+              } else {
+                currentChunk += (currentChunk ? ' ' : '') + trimmedPhrase;
               }
-              
-              chunks.push(remainingSentence.substring(0, chunkEndIndex));
-              remainingSentence = remainingSentence.substring(chunkEndIndex).trim();
             }
           } else {
-            currentChunk = sentence;
+            currentChunk = trimmedSentence;
           }
         } else {
           // Add the sentence to the current chunk
-          currentChunk += (currentChunk ? ' ' : '') + sentence;
+          currentChunk += (currentChunk ? ' ' : '') + trimmedSentence;
         }
       }
     } else {
       // Check if adding this paragraph would exceed max length
-      if (currentChunk.length + paragraph.length > maxLength) {
-        chunks.push(currentChunk);
-        currentChunk = paragraph;
+      if (currentChunk.length + trimmedParagraph.length + 2 > maxLength) {
+        if (currentChunk.length > 0) {
+          chunks.push(currentChunk.trim());
+        }
+        currentChunk = trimmedParagraph;
       } else {
-        currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
+        currentChunk += (currentChunk ? '\n\n' : '') + trimmedParagraph;
       }
     }
   }
   
   // Don't forget the last chunk
-  if (currentChunk.length > 0) {
-    chunks.push(currentChunk);
+  if (currentChunk.trim().length > 0) {
+    chunks.push(currentChunk.trim());
   }
   
-  return chunks;
+  // Filter out empty chunks
+  const filteredChunks = chunks.filter(chunk => chunk.trim().length > 0);
+  
+  console.log(`✅ Text split into ${filteredChunks.length} chunks:`, 
+    filteredChunks.map((chunk, i) => `${i+1}: ${chunk.length} chars`));
+  
+  return filteredChunks;
 }
 
-// Helper function to translate a single text chunk
-async function translateChunk(text, targetLang, normalizedLang) {
-  // Try multiple LibreTranslate instances in case one is down
+// Helper function to translate a single text chunk with improved error handling
+async function translateChunk(text, targetLang, normalizedLang, retryCount = 0) {
+  const MAX_RETRIES = 2;
+  
+  // Improved LibreTranslate instances - more reliable servers
   const libreTranlateInstances = [
     "https://translate.argosopentech.com",
-    "https://translate.terraprint.co", 
+    "https://libretranslate.com", 
+    "https://translate.terraprint.co",
     "https://libretranslate.de"
   ];
   
@@ -103,115 +150,199 @@ async function translateChunk(text, targetLang, normalizedLang) {
   // STEP 1: Try LibreTranslate instances first
   for (const baseUrl of libreTranlateInstances) {
     try {
-      console.log(`Trying LibreTranslate instance: ${baseUrl}`);
+      console.log(`🔄 Trying LibreTranslate instance: ${baseUrl} (attempt ${retryCount + 1})`);
       
       const response = await axios.post(`${baseUrl}/translate`, {
-        q: text,
+        q: text.trim(),
         source: "auto",  // Auto-detect source language
         target: normalizedLang,
         format: "text"
       }, {
-        timeout: 30000, // 30 second timeout
+        timeout: 15000, // Reduced timeout for faster failover
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'User-Agent': 'CaseCrux-Legal-Assistant/1.0'
         }
       });
       
-      console.log(`Translation successful with ${baseUrl}`);
+      console.log(`✅ Translation successful with ${baseUrl}`);
       
       // If we get here, translation worked
       if (response.data && response.data.translatedText) {
-        return response.data.translatedText;
+        return response.data.translatedText.trim();
       } else {
         throw new Error("Invalid response format from LibreTranslate");
       }
     } catch (err) {
       // Save error and try next server
       lastError = err;
-      console.log(`Translation failed with ${baseUrl}, error: ${err.message}`);
+      console.log(`❌ Translation failed with ${baseUrl}: ${err.message}`);
+      
+      // If it's a timeout or network error, try the next server immediately
+      if (err.code === 'ECONNABORTED' || err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') {
+        continue;
+      }
     }
   }
   
   // STEP 2: If all LibreTranslate instances fail, try MyMemory API as fallback
-  console.log("All LibreTranslate servers failed for chunk, trying MyMemory API...");
+  console.log("⚠️ All LibreTranslate servers failed for chunk, trying MyMemory API...");
   try {
     // Use original target language for MyMemory since it supports more languages
     const myMemoryUrl = `https://api.mymemory.translated.net/get`;
     const response = await axios.get(myMemoryUrl, {
       params: {
-        q: text,
+        q: text.trim(),
         langpair: `en|${targetLang}`,
-        de: "your-email@example.com" // MyMemory requires an email
+        de: "casecrux@legal.app" // MyMemory requires an email
       },
-      timeout: 30000
+      timeout: 10000
     });
     
-    console.log("MyMemory response:", response.data);
+    console.log("MyMemory response status:", response.data?.responseStatus);
     
-    if (response.data && response.data.responseData && response.data.responseData.translatedText) {
-      return response.data.responseData.translatedText;
+    if (response.data && 
+        response.data.responseData && 
+        response.data.responseData.translatedText &&
+        response.data.responseData.translatedText !== text) { // Ensure it was actually translated
+      console.log("✅ MyMemory translation successful");
+      return response.data.responseData.translatedText.trim();
     } else {
-      throw new Error("Invalid response from MyMemory API");
+      throw new Error("Invalid or unchanged response from MyMemory API");
     }
   } catch (err) {
-    console.log("MyMemory API also failed for chunk:", err.message);
+    console.log("❌ MyMemory API also failed for chunk:", err.message);
+    lastError = err;
+  }
+  
+  // STEP 3: Retry logic with exponential backoff
+  if (retryCount < MAX_RETRIES) {
+    console.log(`🔄 Retrying translation (attempt ${retryCount + 2}/${MAX_RETRIES + 1}) after delay...`);
+    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000)); // 1s, 2s, 4s delays
+    return translateChunk(text, targetLang, normalizedLang, retryCount + 1);
   }
   
   // If we reach here, all translation attempts for this chunk failed
+  console.error(`❌ All translation attempts failed for chunk: "${text.substring(0, 100)}..."`);
   throw lastError || new Error("All translation services failed for this chunk");
 }
 
 router.post("/", async (req, res) => {
-  console.log("Translation request received:", req.body);
+  console.log("🌐 Translation request received:", { 
+    textLength: req.body.summary?.length, 
+    targetLang: req.body.targetLang 
+  });
   
   const { summary, targetLang } = req.body;
   if (!summary || !targetLang) {
-    console.log("Missing required fields:", { summary: !!summary, targetLang: !!targetLang });
+    console.log("❌ Missing required fields:", { summary: !!summary, targetLang: !!targetLang });
     return res.status(400).json({ 
       error: "Missing required fields", 
       details: "Both summary and targetLang are required" 
     });
   }
   
-  console.log(`Starting translation to ${targetLang}, text length: ${summary.length}`);
+  // Validate summary length
+  if (summary.length === 0) {
+    return res.status(400).json({ 
+      error: "Empty text", 
+      details: "Summary text cannot be empty" 
+    });
+  }
+  
+  if (summary.length > 10000) {
+    return res.status(400).json({ 
+      error: "Text too long", 
+      details: "Summary text cannot exceed 10,000 characters" 
+    });
+  }
+  
+  console.log(`🚀 Starting translation to ${targetLang}, text length: ${summary.length} characters`);
   
   // Convert language code if needed for LibreTranslate
   const normalizedLang = LANGUAGE_MAPPING[targetLang] || targetLang;
-  console.log(`Using normalized language: ${normalizedLang}`);
+  console.log(`🔄 Using normalized language: ${normalizedLang} (original: ${targetLang})`);
   
   try {
     // Split text into manageable chunks
     const chunks = splitTextIntoChunks(summary, MAX_CHUNK_SIZE);
-    console.log(`Splitting text into ${chunks.length} chunks for translation`);
+    console.log(`📝 Splitting text into ${chunks.length} chunks for translation`);
     
-    // Translate each chunk
+    if (chunks.length === 0) {
+      throw new Error("Failed to split text into chunks");
+    }
+    
+    // Translate each chunk with progress tracking
     const translatedChunks = [];
+    const errors = [];
+    
     for (let i = 0; i < chunks.length; i++) {
-      console.log(`Translating chunk ${i+1}/${chunks.length} (${chunks[i].length} chars)`);
-      const translatedChunk = await translateChunk(chunks[i], targetLang, normalizedLang);
-      translatedChunks.push(translatedChunk);
+      const chunkProgress = `${i + 1}/${chunks.length}`;
+      console.log(`📋 Translating chunk ${chunkProgress} (${chunks[i].length} characters)`);
       
-      // Add a small delay between requests to avoid rate limiting
-      if (i < chunks.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+      try {
+        const translatedChunk = await translateChunk(chunks[i], targetLang, normalizedLang);
+        translatedChunks.push(translatedChunk);
+        console.log(`✅ Chunk ${chunkProgress} translated successfully`);
+        
+        // Add a small delay between requests to avoid rate limiting
+        if (i < chunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay
+        }
+      } catch (chunkError) {
+        console.error(`❌ Failed to translate chunk ${chunkProgress}:`, chunkError.message);
+        errors.push({
+          chunkIndex: i,
+          chunkText: chunks[i].substring(0, 100) + "...",
+          error: chunkError.message
+        });
+        
+        // For now, use original text if translation fails for a chunk
+        // This ensures partial translation rather than complete failure
+        translatedChunks.push(`[Translation failed: ${chunks[i]}]`);
       }
     }
     
     // Combine the translated chunks
-    const translatedText = translatedChunks.join(' ');
-    console.log(`Translation completed. Original length: ${summary.length}, Translated length: ${translatedText.length}`);
+    const translatedText = translatedChunks.join(' ').trim();
     
-    return res.json({ 
+    // Log results
+    const successfulChunks = chunks.length - errors.length;
+    console.log(`🎯 Translation completed. Successful chunks: ${successfulChunks}/${chunks.length}`);
+    console.log(`📊 Original length: ${summary.length}, Translated length: ${translatedText.length}`);
+    
+    // Prepare response
+    const response = { 
       translated: translatedText,
       originalLength: summary.length,
       translatedLength: translatedText.length,
-      chunksProcessed: chunks.length
-    });
+      chunksProcessed: chunks.length,
+      successfulChunks: successfulChunks,
+      targetLanguage: targetLang,
+      normalizedLanguage: normalizedLang
+    };
+    
+    // Include errors if any occurred, but still return the partial translation
+    if (errors.length > 0) {
+      response.warnings = {
+        message: `${errors.length} chunks failed to translate completely`,
+        failedChunks: errors.length,
+        details: errors
+      };
+      console.log(`⚠️ Translation completed with ${errors.length} warnings`);
+    }
+    
+    return res.json(response);
+    
   } catch (error) {
-    console.error("Translation error:", error.response?.data || error.message);
+    console.error("💥 Critical translation error:", error.message);
+    console.error("Stack trace:", error.stack);
+    
     res.status(500).json({ 
       error: "Translation failed", 
-      details: error.response?.data?.error || error.message 
+      details: error.message || "Unknown error occurred during translation",
+      targetLanguage: targetLang,
+      textLength: summary.length
     });
   }
 });
