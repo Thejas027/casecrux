@@ -1,0 +1,151 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment files
+.env.local
+.env.production
+.env.development
+
+# Build outputs
+dist/
+build/
+*/dist/
+*/build/
+
+# Logs
+*.log
+logs/
+*/logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Vercel
+.vercel/
+*/.vercel/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files and backups
+*.tmp
+*.temp
+*.bak
+*_backup.*
+*_old.*
+*_fixed.*
+*_new.*
+
+# Docker files (since we're using Vercel/Render)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Railway config (since we're using Vercel/Render)
+railway.toml
+*/railway.toml
+
+# Deployment and testing scripts (keep only essential ones)
+deploy.ps1
+deploy.sh
+deploy_fix.*
+start_local_dev.*
+start_local.sh
+browser_test_script.js
+
+# Documentation files (temporary testing guides)
+BACKEND_ISSUE_RESOLUTION.md
+DEPLOYMENT_TESTING_CHECKLIST.md
+LOCAL_TESTING_GUIDE.md
+ENVIRONMENT_CONFIG.md
+
+# Mock backends and test files
+mock_backend.js
+*/mock_backend.js
+test_translation.js
+*/test_translation.js
+server_minimal.js
+*/server_minimal.js
+vercel_minimal.json
+*/vercel_minimal.json
+
+# Chatbot backup files
+chatbot_backup.js
+chatbot_new.js
+*/chatbot_backup.js
+*/chatbot_new.js
+
+# Translation backup files
+translateSummary_fixed.js
+*/translateSummary_fixed.js
+
+# API directory (if not needed)
+server/api/
+
+# Render/ML service temporary files
+services/Dockerfile
+services/railway.toml
