@@ -2,6 +2,14 @@ const express = require("express");
 const axios = require("axios");
 const router = express.Router();
 
+// Import cache middleware
+const { 
+  cacheMiddleware, 
+  cacheResponseMiddleware,
+  getCacheStatsHandler,
+  clearCacheHandler 
+} = require('../utils/cacheMiddleware');
+
 // Set your Render ML service URL in .env as ML_SERVICE_URL
 const ML_SERVICE_URL =
   process.env.ML_SERVICE_URL || "https://your-ml-service.onrender.com";
@@ -38,7 +46,10 @@ const logSuccess = (context, response) => {
 };
 
 // Proxy route to forward summarize_from_urls requests to ML service
-router.post("/ml/summarize_from_urls", async (req, res) => {
+router.post("/ml/summarize_from_urls", 
+  cacheMiddleware('url_summary'),
+  cacheResponseMiddleware(),
+  async (req, res) => {
   const startTime = Date.now();
   console.log("\n🔄 POST /ml/summarize_from_urls - Starting request");
   console.log("📅 Timestamp:", new Date().toISOString());
@@ -133,7 +144,10 @@ router.post("/ml/summarize_from_urls", async (req, res) => {
 });
 
 // NEW: Advanced summarization endpoint
-router.post("/ml/advanced_summarize", async (req, res) => {
+router.post("/ml/advanced_summarize",
+  cacheMiddleware('advanced_summary'),
+  cacheResponseMiddleware(),
+  async (req, res) => {
   try {
     const response = await axios.post(
       `${ML_SERVICE_URL}/advanced_summarize`,
@@ -167,7 +181,10 @@ router.post("/ml/compare_summaries", async (req, res) => {
 });
 
 // Standard summarize endpoint (for file uploads)
-router.post("/ml/summarize", async (req, res) => {
+router.post("/ml/summarize",
+  cacheMiddleware('basic_summary'),
+  cacheResponseMiddleware(),
+  async (req, res) => {
   const startTime = Date.now();
   console.log("\n📄 POST /ml/summarize - Starting file upload request");
   console.log("📅 Timestamp:", new Date().toISOString());
@@ -586,7 +603,10 @@ function createSectionWiseDemoResponse() {
 }
 
 // Proxy route for category summarization
-router.post("/ml/summarize_category", async (req, res) => {
+router.post("/ml/summarize_category",
+  cacheMiddleware('category_summary'),
+  cacheResponseMiddleware(),
+  async (req, res) => {
   const startTime = Date.now();
   console.log("\n🔄 POST /ml/summarize_category - Starting request");
   console.log("📅 Timestamp:", new Date().toISOString());
@@ -744,5 +764,10 @@ router.post("/ml/summarize_category_download", async (req, res) => {
     });
   }
 });
+
+// Cache management endpoints
+router.get("/ml/cache/stats", getCacheStatsHandler);
+
+router.delete("/ml/cache/clear", clearCacheHandler);
 
 module.exports = router;

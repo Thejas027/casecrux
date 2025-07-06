@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
+// Initialize Redis for caching
+const { initializeRedis, closeRedisConnection } = require("./utils/redisConfig");
+
 const app = express();
 
 // CORS configuration for production
@@ -49,6 +52,16 @@ if (process.env.MONGO_URI) {
 } else {
   console.warn("MONGO_URI not found in environment variables");
 }
+
+// Initialize Redis cache
+initializeRedis()
+  .then(() => {
+    console.log("🚀 Redis cache initialization completed");
+  })
+  .catch((err) => {
+    console.warn("⚠️ Redis initialization failed:", err.message);
+    console.warn("📝 Application will continue without caching");
+  });
 
 // Hello route
 app.get("/hello", (req, res) => {
@@ -167,4 +180,39 @@ app.use('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+const server = app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('🔄 SIGTERM received. Starting graceful shutdown...');
+  
+  server.close(() => {
+    console.log('✅ HTTP server closed');
+  });
+  
+  await closeRedisConnection();
+  
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.close();
+    console.log('✅ MongoDB connection closed');
+  }
+  
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('🔄 SIGINT received. Starting graceful shutdown...');
+  
+  server.close(() => {
+    console.log('✅ HTTP server closed');
+  });
+  
+  await closeRedisConnection();
+  
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.close();
+    console.log('✅ MongoDB connection closed');
+  }
+  
+  process.exit(0);
+});
