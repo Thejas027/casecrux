@@ -133,12 +133,6 @@ server_minimal.js
 vercel_minimal.json
 */vercel_minimal.json
 
-# Chatbot backup files
-chatbot_backup.js
-chatbot_new.js
-*/chatbot_backup.js
-*/chatbot_new.js
-
 # Translation backup files
 translateSummary_fixed.js
 */translateSummary_fixed.js

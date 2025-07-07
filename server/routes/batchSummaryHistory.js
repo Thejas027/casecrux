@@ -8,7 +8,7 @@ router.get('/batch-summary-history', async (req, res) => {
     const history = await BatchSummaryHistory.find().sort({ createdAt: -1 });
     res.json({ history });
   } catch (error) {
-    console.error('Error fetching batch summary history:', error);
+    
     res.status(500).json({ error: 'Failed to fetch batch summary history' });
   }
 });
@@ -21,7 +21,7 @@ router.get('/batch-summary-history/category/:category', async (req, res) => {
     }).sort({ createdAt: -1 });
     res.json({ history });
   } catch (error) {
-    console.error('Error fetching batch summary history by category:', error);
+    
     res.status(500).json({ error: 'Failed to fetch batch summary history by category' });
   }
 });
@@ -35,7 +35,7 @@ router.get('/batch-summary-history/:id', async (req, res) => {
     }
     res.json(summary);
   } catch (error) {
-    console.error('Error fetching batch summary:', error);
+    
     res.status(500).json({ error: 'Failed to fetch batch summary' });
   }
 });
@@ -59,7 +59,7 @@ router.post('/batch-summary-history', async (req, res) => {
     const savedSummary = await newBatchSummary.save();
     res.status(201).json(savedSummary);
   } catch (error) {
-    console.error('Error creating batch summary:', error);
+    
     res.status(500).json({ error: 'Failed to create batch summary' });
   }
 });
@@ -94,7 +94,7 @@ router.post('/batch-summary-history/:id/translations', async (req, res) => {
     await batchSummary.save();
     res.json(batchSummary);
   } catch (error) {
-    console.error('Error adding translation:', error);
+    
     res.status(500).json({ error: 'Failed to add translation' });
   }
 });
@@ -108,7 +108,7 @@ router.delete('/batch-summary-history/:id', async (req, res) => {
     }
     res.json({ success: true });
   } catch (error) {
-    console.error('Error deleting batch summary:', error);
+    
     res.status(500).json({ error: 'Failed to delete batch summary' });
   }
 });

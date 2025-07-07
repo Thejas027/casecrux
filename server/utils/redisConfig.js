@@ -1,87 +1,132 @@
 const redis = require('redis');
 
-// Redis configuration
+// Enhanced Redis configuration for both local and production
 const REDIS_CONFIG = {
-  // For local development (Redis running locally)
-  local: {
-    host: 'localhost',
-    port: 6379,
-    retryDelayOnFailover: 100,
-    maxRetriesPerRequest: 3
-  },
-  
-  // For production (Redis Cloud or other hosted Redis)
-  production: {
-    url: process.env.REDIS_URL, // Set this in production environment
-    retryDelayOnFailover: 100,
-    maxRetriesPerRequest: 3
+  // Connection timeout and retry settings
+  connectTimeout: 10000, // 10 seconds
+  lazyConnect: true,
+  retryDelayOnFailover: 100,
+  maxRetriesPerRequest: 3,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
   }
 };
 
-// Create Redis client with error handling
+// Create Redis client with enhanced error handling
 let redisClient = null;
 
 const createRedisClient = () => {
   try {
-    // Determine configuration based on environment
+    // Determine environment and Redis URL
     const isProduction = process.env.NODE_ENV === 'production';
-    const config = isProduction ? REDIS_CONFIG.production : REDIS_CONFIG.local;
+    const redisUrl = getRedisUrl();
     
-    console.log('🔄 Initializing Redis client...');
-    console.log('📍 Environment:', isProduction ? 'production' : 'development');
-    
-    // Create client with appropriate config
-    if (isProduction && process.env.REDIS_URL) {
-      redisClient = redis.createClient({ url: process.env.REDIS_URL });
-      console.log('🌐 Using production Redis URL');
-    } else {
-      redisClient = redis.createClient({
-        socket: {
-          host: config.local?.host || 'localhost',
-          port: config.local?.port || 6379
-        }
-      });
-      console.log('🏠 Using local Redis at localhost:6379');
+    if (!redisUrl) {
+      return null;
     }
     
-    // Event handlers
+    // Create Redis client with URL and configuration
+    redisClient = redis.createClient({
+      url: redisUrl,
+      socket: {
+        connectTimeout: REDIS_CONFIG.connectTimeout,
+        lazyConnect: REDIS_CONFIG.lazyConnect,
+        reconnectStrategy: REDIS_CONFIG.retryStrategy
+      }
+    });
+    
+    // Event handlers with enhanced logging
     redisClient.on('connect', () => {
-      console.log('✅ Redis client connected successfully');
+      // Redis client connected successfully
+    });
+    
+    redisClient.on('ready', () => {
+      // Redis client ready for operations
     });
     
     redisClient.on('error', (err) => {
-      console.warn('⚠️ Redis client error:', err.message);
-      console.warn('📝 Application will continue without caching');
+      // Redis client error - Application will continue without caching
     });
     
     redisClient.on('reconnecting', () => {
-      console.log('🔄 Redis client reconnecting...');
+      // Redis client reconnecting...
+    });
+    
+    redisClient.on('end', () => {
+      // Redis connection ended
     });
     
     return redisClient;
     
   } catch (error) {
-    console.warn('❌ Failed to initialize Redis:', error.message);
-    console.warn('📝 Application will continue without caching');
+    // Failed to initialize Redis - Application will continue without caching
     return null;
   }
 };
 
-// Initialize Redis client
+// Get the appropriate Redis URL based on environment
+const getRedisUrl = () => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  if (isProduction) {
+    // Production: use production Redis URL
+    const prodUrl = process.env.REDIS_URL_PRODUCTION || process.env.REDIS_URL;
+    if (prodUrl) {
+      return prodUrl;
+    }
+  } else {
+    // Development: try local Redis first, then fallback to production
+    const localUrl = process.env.REDIS_URL_LOCAL;
+    const prodUrl = process.env.REDIS_URL_PRODUCTION || process.env.REDIS_URL;
+    
+    if (localUrl) {
+      return localUrl;
+    } else if (prodUrl) {
+      return prodUrl;
+    }
+  }
+  
+  return null;
+};
+
+// Initialize Redis client with enhanced error handling
 const initializeRedis = async () => {
   try {
     if (!redisClient) {
       redisClient = createRedisClient();
     }
     
-    if (redisClient) {
-      await redisClient.connect();
-      console.log('🚀 Redis initialization completed');
-      return redisClient;
+    if (!redisClient) {
+      return null;
     }
+    
+    // Test connection with timeout
+    const connectionPromise = redisClient.connect();
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Redis connection timeout')), REDIS_CONFIG.connectTimeout);
+    });
+    
+    await Promise.race([connectionPromise, timeoutPromise]);
+    
+    // Test basic operation
+    await redisClient.ping();
+    
+    return redisClient;
+    
   } catch (error) {
-    console.warn('❌ Redis connection failed:', error.message);
-    console.warn('📝 Continuing without cache - all requests will hit ML service');
+    // Redis connection failed - Continuing without cache
+    
+    // Clean up failed client
+    if (redisClient) {
+      try {
+        await redisClient.disconnect();
+      } catch (disconnectError) {
+        // Ignore disconnect errors
+      }
+      redisClient = null;
+    }
+    
     return null;
   }
 };
@@ -96,12 +141,52 @@ const isRedisAvailable = () => {
   return redisClient && redisClient.isReady;
 };
 
-// Graceful shutdown
+// Graceful shutdown with enhanced error handling
 const closeRedisConnection = async () => {
-  if (redisClient && redisClient.isReady) {
-    console.log('🔄 Closing Redis connection...');
-    await redisClient.quit();
-    console.log('✅ Redis connection closed');
+  if (redisClient) {
+    try {
+      if (redisClient.isReady) {
+        await redisClient.quit();
+        // Redis connection closed gracefully
+      } else {
+        await redisClient.disconnect();
+        // Redis client disconnected
+      }
+    } catch (error) {
+      // Error closing Redis connection
+      // Force disconnect if graceful close fails
+      try {
+        await redisClient.disconnect();
+      } catch (forceError) {
+        // Force disconnect also failed
+      }
+    } finally {
+      redisClient = null;
+    }
+  }
+};
+
+// Health check function
+const checkRedisHealth = async () => {
+  try {
+    if (!isRedisAvailable()) {
+      return { healthy: false, message: 'Redis client not available' };
+    }
+    
+    const start = Date.now();
+    await redisClient.ping();
+    const responseTime = Date.now() - start;
+    
+    return { 
+      healthy: true, 
+      message: 'Redis is healthy',
+      responseTime: `${responseTime}ms`
+    };
+  } catch (error) {
+    return { 
+      healthy: false, 
+      message: `Redis health check failed: ${error.message}` 
+    };
   }
 };
 
@@ -109,5 +194,7 @@ module.exports = {
   initializeRedis,
   getRedisClient,
   isRedisAvailable,
-  closeRedisConnection
+  closeRedisConnection,
+  checkRedisHealth,
+  getRedisUrl
 };

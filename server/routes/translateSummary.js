@@ -23,9 +23,7 @@ function splitTextIntoChunks(text, maxLength) {
   if (text.length <= maxLength) {
     return [text.trim()];
   }
-  
-  console.log(`📝 Splitting text of ${text.length} characters into chunks of max ${maxLength} characters`);
-  
+
   const chunks = [];
   let currentChunk = '';
   
@@ -126,8 +124,7 @@ function splitTextIntoChunks(text, maxLength) {
   // Filter out empty chunks
   const filteredChunks = chunks.filter(chunk => chunk.trim().length > 0);
   
-  console.log(`✅ Text split into ${filteredChunks.length} chunks:`, 
-    filteredChunks.map((chunk, i) => `${i+1}: ${chunk.length} chars`));
+   => `${i+1}: ${chunk.length} chars`));
   
   return filteredChunks;
 }
@@ -150,7 +147,7 @@ async function translateChunk(text, targetLang, normalizedLang, retryCount = 0) 
   // STEP 1: Try LibreTranslate instances first
   for (const baseUrl of libreTranlateInstances) {
     try {
-      console.log(`🔄 Trying LibreTranslate instance: ${baseUrl} (attempt ${retryCount + 1})`);
+      `);
       
       const response = await axios.post(`${baseUrl}/translate`, {
         q: text.trim(),
@@ -164,9 +161,7 @@ async function translateChunk(text, targetLang, normalizedLang, retryCount = 0) 
           'User-Agent': 'CaseCrux-Legal-Assistant/1.0'
         }
       });
-      
-      console.log(`✅ Translation successful with ${baseUrl}`);
-      
+
       // If we get here, translation worked
       if (response.data && response.data.translatedText) {
         return response.data.translatedText.trim();
@@ -176,8 +171,7 @@ async function translateChunk(text, targetLang, normalizedLang, retryCount = 0) 
     } catch (err) {
       // Save error and try next server
       lastError = err;
-      console.log(`❌ Translation failed with ${baseUrl}: ${err.message}`);
-      
+
       // If it's a timeout or network error, try the next server immediately
       if (err.code === 'ECONNABORTED' || err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') {
         continue;
@@ -186,7 +180,7 @@ async function translateChunk(text, targetLang, normalizedLang, retryCount = 0) 
   }
   
   // STEP 2: If all LibreTranslate instances fail, try MyMemory API as fallback
-  console.log("⚠️ All LibreTranslate servers failed for chunk, trying MyMemory API...");
+  
   try {
     // Use original target language for MyMemory since it supports more languages
     const myMemoryUrl = `https://api.mymemory.translated.net/get`;
@@ -198,44 +192,38 @@ async function translateChunk(text, targetLang, normalizedLang, retryCount = 0) 
       },
       timeout: 10000
     });
-    
-    console.log("MyMemory response status:", response.data?.responseStatus);
-    
+
     if (response.data && 
         response.data.responseData && 
         response.data.responseData.translatedText &&
         response.data.responseData.translatedText !== text) { // Ensure it was actually translated
-      console.log("✅ MyMemory translation successful");
+      
       return response.data.responseData.translatedText.trim();
     } else {
       throw new Error("Invalid or unchanged response from MyMemory API");
     }
   } catch (err) {
-    console.log("❌ MyMemory API also failed for chunk:", err.message);
+    
     lastError = err;
   }
   
   // STEP 3: Retry logic with exponential backoff
   if (retryCount < MAX_RETRIES) {
-    console.log(`🔄 Retrying translation (attempt ${retryCount + 2}/${MAX_RETRIES + 1}) after delay...`);
+     after delay...`);
     await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000)); // 1s, 2s, 4s delays
     return translateChunk(text, targetLang, normalizedLang, retryCount + 1);
   }
   
   // If we reach here, all translation attempts for this chunk failed
-  console.error(`❌ All translation attempts failed for chunk: "${text.substring(0, 100)}..."`);
+  }..."`);
   throw lastError || new Error("All translation services failed for this chunk");
 }
 
 router.post("/", async (req, res) => {
-  console.log("🌐 Translation request received:", { 
-    textLength: req.body.summary?.length, 
-    targetLang: req.body.targetLang 
-  });
-  
+
   const { summary, targetLang } = req.body;
   if (!summary || !targetLang) {
-    console.log("❌ Missing required fields:", { summary: !!summary, targetLang: !!targetLang });
+    
     return res.status(400).json({ 
       error: "Missing required fields", 
       details: "Both summary and targetLang are required" 
@@ -256,18 +244,15 @@ router.post("/", async (req, res) => {
       details: "Summary text cannot exceed 10,000 characters" 
     });
   }
-  
-  console.log(`🚀 Starting translation to ${targetLang}, text length: ${summary.length} characters`);
-  
+
   // Convert language code if needed for LibreTranslate
   const normalizedLang = LANGUAGE_MAPPING[targetLang] || targetLang;
-  console.log(`🔄 Using normalized language: ${normalizedLang} (original: ${targetLang})`);
+  `);
   
   try {
     // Split text into manageable chunks
     const chunks = splitTextIntoChunks(summary, MAX_CHUNK_SIZE);
-    console.log(`📝 Splitting text into ${chunks.length} chunks for translation`);
-    
+
     if (chunks.length === 0) {
       throw new Error("Failed to split text into chunks");
     }
@@ -278,19 +263,18 @@ router.post("/", async (req, res) => {
     
     for (let i = 0; i < chunks.length; i++) {
       const chunkProgress = `${i + 1}/${chunks.length}`;
-      console.log(`📋 Translating chunk ${chunkProgress} (${chunks[i].length} characters)`);
+      `);
       
       try {
         const translatedChunk = await translateChunk(chunks[i], targetLang, normalizedLang);
         translatedChunks.push(translatedChunk);
-        console.log(`✅ Chunk ${chunkProgress} translated successfully`);
-        
+
         // Add a small delay between requests to avoid rate limiting
         if (i < chunks.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay
         }
       } catch (chunkError) {
-        console.error(`❌ Failed to translate chunk ${chunkProgress}:`, chunkError.message);
+        
         errors.push({
           chunkIndex: i,
           chunkText: chunks[i].substring(0, 100) + "...",
@@ -308,9 +292,7 @@ router.post("/", async (req, res) => {
     
     // Log results
     const successfulChunks = chunks.length - errors.length;
-    console.log(`🎯 Translation completed. Successful chunks: ${successfulChunks}/${chunks.length}`);
-    console.log(`📊 Original length: ${summary.length}, Translated length: ${translatedText.length}`);
-    
+
     // Prepare response
     const response = { 
       translated: translatedText,
@@ -329,15 +311,13 @@ router.post("/", async (req, res) => {
         failedChunks: errors.length,
         details: errors
       };
-      console.log(`⚠️ Translation completed with ${errors.length} warnings`);
+      
     }
     
     return res.json(response);
     
   } catch (error) {
-    console.error("💥 Critical translation error:", error.message);
-    console.error("Stack trace:", error.stack);
-    
+
     res.status(500).json({ 
       error: "Translation failed", 
       details: error.message || "Unknown error occurred during translation",

@@ -14,7 +14,7 @@ const cacheMiddleware = (cacheType = 'summary') => {
       const cacheKey = await generateCacheKeyForRequest(req, cacheType);
       
       if (!cacheKey) {
-        console.log('⚠️ Could not generate cache key - proceeding without cache');
+        // Could not generate cache key - proceeding without cache
         return next();
       }
       
@@ -23,7 +23,6 @@ const cacheMiddleware = (cacheType = 'summary') => {
       
       if (cachedResult) {
         // Cache hit - return cached result
-        console.log(`🎯 Cache HIT for ${cacheType} - returning cached result`);
         
         // Add cache metadata to response
         const response = {
@@ -39,7 +38,6 @@ const cacheMiddleware = (cacheType = 'summary') => {
       }
       
       // Cache miss - continue to ML processing
-      console.log(`❌ Cache MISS for ${cacheType} - proceeding to ML service`);
       
       // Store cache key in request for later use
       req.cacheKey = cacheKey;
@@ -48,7 +46,7 @@ const cacheMiddleware = (cacheType = 'summary') => {
       next();
       
     } catch (error) {
-      console.error('❌ Cache middleware error:', error.message);
+      // Cache middleware error
       // Continue without cache on error
       next();
     }
@@ -66,7 +64,7 @@ const cacheResponseMiddleware = () => {
       try {
         // Cache the response if we have a cache key
         if (req.cacheKey && data && !data.error) {
-          console.log(`💾 Caching ML response for ${req.cacheType}`);
+          // Caching ML response
           
           // Determine TTL based on cache type
           let ttl = CACHE_TTL.FULL_SUMMARY;
@@ -89,7 +87,7 @@ const cacheResponseMiddleware = () => {
         originalJson.call(this, data);
         
       } catch (error) {
-        console.error('❌ Cache response middleware error:', error.message);
+        // Cache response middleware error
         // Still send response even if caching fails
         originalJson.call(this, data);
       }
@@ -140,7 +138,7 @@ const generateCacheKeyForRequest = async (req, cacheType) => {
     }
     
     if (!contentToHash) {
-      console.log('⚠️ No content found for cache key generation');
+      // No content found for cache key generation
       return null;
     }
     
@@ -151,11 +149,10 @@ const generateCacheKeyForRequest = async (req, cacheType) => {
     // Generate structured cache key
     const cacheKey = generateCacheKey(cacheType, contentHash, options);
     
-    console.log(`🔑 Generated cache key: ${cacheKey}`);
     return cacheKey;
     
   } catch (error) {
-    console.error('❌ Error generating cache key for request:', error.message);
+    // Error generating cache key for request
     return null;
   }
 };

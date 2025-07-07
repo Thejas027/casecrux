@@ -11,8 +11,6 @@ import CategoryBatchWithTranslationHistory from "./components/CategoryBatchWithT
 import BatchSummaryHistorySidebar from "./components/BatchSummaryHistorySidebar";
 import BatchSummaryDetail from "./components/BatchSummaryDetail";
 import AdvancedPdfSummarizer from "./components/AdvancedPdfSummarizer";
-import ChatInterface from "./components/ChatInterface";
-import ChatPage from "./components/ChatPage";
 
 function App() {
   return (
@@ -20,7 +18,6 @@ function App() {
       <div className="relative">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/chat" element={<ChatPage />} />
           <Route
             path="/pdf-summarizer"
             element={
@@ -78,8 +75,6 @@ function App() {
             }
           />
         </Routes>
-        {/* Global Chat Interface - available on all pages */}
-        <ChatInterface />
       </div>
     </BrowserRouter>
   );

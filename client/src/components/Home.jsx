@@ -129,35 +129,6 @@ function Home() {
               </svg>
             </div>
           </Link>
-
-          <Link
-            to="/chat"
-            className="bg-gradient-to-br from-[#ff6b6b]/10 to-[#4ecdc4]/10 border border-[#ff6b6b]/30 rounded-2xl p-8 hover:border-[#ff6b6b]/50 transition-all duration-300 relative"
-          >
-            {/* NEW badge */}
-            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-[#ff6b6b] to-[#4ecdc4] text-white text-xs font-bold px-3 py-1 rounded-full">
-              NEW
-            </div>
-            <div className="mb-6">
-              <div className="bg-gradient-to-r from-[#ff6b6b] to-[#4ecdc4] w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-[#18181b]" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd"/>
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">
-                🤖 AI Legal Assistant
-              </h3>
-              <p className="text-[#e0e7ef]/70 text-sm leading-relaxed">
-                Interactive AI chatbot to answer questions about your documents, explain legal concepts, and provide personalized guidance
-              </p>
-            </div>
-            <div className="flex items-center text-[#ff6b6b] text-sm font-medium">
-              Chat Now
-              <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
-              </svg>
-            </div>
-          </Link>
         </div>
         
         {/* Features highlights */}

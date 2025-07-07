@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 // Initialize Redis for caching
-const { initializeRedis, closeRedisConnection } = require("./utils/redisConfig");
+const { initializeRedis, closeRedisConnection, checkRedisHealth } = require("./utils/redisConfig");
 
 const app = express();
 
@@ -32,35 +32,44 @@ app.get("/", (req, res) => {
 });
 
 // API health check
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
+  const redisHealth = await checkRedisHealth();
+  
   res.json({ 
     status: "healthy",
     database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    redis: redisHealth,
     timestamp: new Date().toISOString()
   });
+});
+
+// Redis-specific health check
+app.get("/api/redis-status", async (req, res) => {
+  const redisHealth = await checkRedisHealth();
+  res.json(redisHealth);
 });
 
 // Connect to MongoDB with better error handling
 if (process.env.MONGO_URI) {
   mongoose
     .connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB connected successfully"))
+    .then(() => {
+      // MongoDB connected successfully
+    })
     .catch((err) => {
-      console.error("MongoDB connection error:", err);
-      // Don't crash the server if MongoDB fails
+      // MongoDB connection error - Don't crash the server if MongoDB fails
     });
 } else {
-  console.warn("MONGO_URI not found in environment variables");
+  // MONGO_URI not found in environment variables
 }
 
 // Initialize Redis cache
 initializeRedis()
   .then(() => {
-    console.log("🚀 Redis cache initialization completed");
+    // Redis cache initialization completed
   })
   .catch((err) => {
-    console.warn("⚠️ Redis initialization failed:", err.message);
-    console.warn("📝 Application will continue without caching");
+    // Redis initialization failed - Application will continue without caching
   });
 
 // Hello route
@@ -75,7 +84,7 @@ try {
   const summarizeRoutes = require("./routes/summarizeRoutes");
   app.use("/api", summarizeRoutes);
 } catch (err) {
-  console.error("Error loading summarizeRoutes:", err.message);
+  // Error loading summarizeRoutes
 }
 
 try {
@@ -83,7 +92,7 @@ try {
   const cloudinaryUpload = require("./routes/cloudinaryUpload");
   app.use("/api", cloudinaryUpload);
 } catch (err) {
-  console.error("Error loading cloudinaryUpload:", err.message);
+  // Error loading cloudinaryUpload
 }
 
 try {
@@ -91,7 +100,7 @@ try {
   const cloudinaryListFilesByCategory = require("./routes/cloudinaryListFilesByCategory");
   app.use("/api", cloudinaryListFilesByCategory);
 } catch (err) {
-  console.error("Error loading cloudinaryListFilesByCategory:", err.message);
+  // Error loading cloudinaryListFilesByCategory
 }
 
 try {
@@ -99,7 +108,7 @@ try {
   const listUploadedPdfsByCategory = require("./routes/listUploadedPdfsByCategory");
   app.use("/api", listUploadedPdfsByCategory);
 } catch (err) {
-  console.error("Error loading listUploadedPdfsByCategory:", err.message);
+  // Error loading listUploadedPdfsByCategory
 }
 
 // Test MongoDB insert route
@@ -119,7 +128,7 @@ try {
   const mlProxy = require("./routes/mlProxy");
   app.use("/api", mlProxy);
 } catch (err) {
-  console.error("Error loading mlProxy:", err.message);
+  // Error loading mlProxy
 }
 
 try {
@@ -127,7 +136,7 @@ try {
   const translateSummary = require("./routes/translateSummary");
   app.use("/api/translate", translateSummary);
 } catch (err) {
-  console.error("Error loading translateSummary:", err.message);
+  // Error loading translateSummary
 }
 
 try {
@@ -135,7 +144,7 @@ try {
   const batchSummaryHistory = require("./routes/batchSummaryHistory");
   app.use("/api", batchSummaryHistory);
 } catch (err) {
-  console.error("Error loading batchSummaryHistory:", err.message);
+  // Error loading batchSummaryHistory
 }
 
 // Optional routes that may not exist in all deployments
@@ -144,26 +153,18 @@ try {
   const allCategories = require("./routes/allCategories");
   app.use("/api", allCategories);
 } catch (err) {
-  console.warn("allCategories route not found, skipping");
+  // allCategories route not found, skipping
 }
 
 try {
   const categoryRoutes = require("./routes/categoryRoutes");
   app.use("/api", categoryRoutes);
 } catch (err) {
-  console.warn("categoryRoutes not found, skipping");
-}
-
-try {
-  const chatbotRoutes = require("./routes/chatbot");
-  app.use("/api/chat", chatbotRoutes);
-} catch (err) {
-  console.warn("chatbot routes not found, skipping");
+  // categoryRoutes not found, skipping
 }
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Global error:', err);
   res.status(500).json({
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
@@ -180,38 +181,36 @@ app.use('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+const server = app.listen(PORT, () => {
+  // Server started on port
+});
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('🔄 SIGTERM received. Starting graceful shutdown...');
-  
   server.close(() => {
-    console.log('✅ HTTP server closed');
+    // HTTP server closed
   });
   
   await closeRedisConnection();
   
   if (mongoose.connection.readyState === 1) {
     await mongoose.connection.close();
-    console.log('✅ MongoDB connection closed');
+    // MongoDB connection closed
   }
   
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  console.log('🔄 SIGINT received. Starting graceful shutdown...');
-  
   server.close(() => {
-    console.log('✅ HTTP server closed');
+    // HTTP server closed
   });
   
   await closeRedisConnection();
   
   if (mongoose.connection.readyState === 1) {
     await mongoose.connection.close();
-    console.log('✅ MongoDB connection closed');
+    // MongoDB connection closed
   }
   
   process.exit(0);
