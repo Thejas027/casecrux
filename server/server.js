@@ -54,22 +54,22 @@ if (process.env.MONGO_URI) {
   mongoose
     .connect(process.env.MONGO_URI)
     .then(() => {
-      // MongoDB connected successfully
+      console.log('MongoDB connected successfully');
     })
     .catch((err) => {
-      // MongoDB connection error - Don't crash the server if MongoDB fails
+      console.log('MongoDB connection error:', err.message);
     });
 } else {
-  // MONGO_URI not found in environment variables
+  console.log('MONGO_URI not found in environment variables');
 }
 
 // Initialize Redis cache
 initializeRedis()
   .then(() => {
-    // Redis cache initialization completed
+    console.log('Redis cache initialization completed');
   })
   .catch((err) => {
-    // Redis initialization failed - Application will continue without caching
+    console.log('Redis initialization failed - Application will continue without caching');
   });
 
 // Hello route
@@ -78,9 +78,7 @@ app.get("/hello", (req, res) => {
 });
 
 // Safely import and use routes with error handling
-// Safely import and use routes with error handling
 try {
-  // Import and use the summarize routes (old features)
   const summarizeRoutes = require("./routes/summarizeRoutes");
   app.use("/api", summarizeRoutes);
 } catch (err) {
@@ -88,7 +86,6 @@ try {
 }
 
 try {
-  // Import and use the cloudinaryUpload route (category-based upload)
   const cloudinaryUpload = require("./routes/cloudinaryUpload");
   app.use("/api", cloudinaryUpload);
 } catch (err) {
@@ -96,7 +93,6 @@ try {
 }
 
 try {
-  // Import and use the cloudinaryListFilesByCategory route (list PDFs by category)
   const cloudinaryListFilesByCategory = require("./routes/cloudinaryListFilesByCategory");
   app.use("/api", cloudinaryListFilesByCategory);
 } catch (err) {
@@ -104,7 +100,6 @@ try {
 }
 
 try {
-  // Import and use the listUploadedPdfsByCategory route (list uploaded PDFs by category from MongoDB)
   const listUploadedPdfsByCategory = require("./routes/listUploadedPdfsByCategory");
   app.use("/api", listUploadedPdfsByCategory);
 } catch (err) {
@@ -124,7 +119,6 @@ app.post("/test-mongo", async (req, res) => {
 });
 
 try {
-  // Register the ML proxy route
   const mlProxy = require("./routes/mlProxy");
   app.use("/api", mlProxy);
 } catch (err) {
@@ -132,7 +126,6 @@ try {
 }
 
 try {
-  // Register the translate-summary API route
   const translateSummary = require("./routes/translateSummary");
   app.use("/api/translate", translateSummary);
 } catch (err) {
@@ -140,14 +133,12 @@ try {
 }
 
 try {
-  // Register the batch summary history API route
   const batchSummaryHistory = require("./routes/batchSummaryHistory");
   app.use("/api", batchSummaryHistory);
 } catch (err) {
   // Error loading batchSummaryHistory
 }
 
-// Optional routes that may not exist in all deployments
 // Optional routes that may not exist in all deployments
 try {
   const allCategories = require("./routes/allCategories");
@@ -182,35 +173,37 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-  // Server started on port
+  console.log(`Server running on port ${PORT}`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully');
   server.close(() => {
-    // HTTP server closed
+    console.log('HTTP server closed');
   });
   
   await closeRedisConnection();
   
   if (mongoose.connection.readyState === 1) {
     await mongoose.connection.close();
-    // MongoDB connection closed
+    console.log('MongoDB connection closed');
   }
   
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down gracefully');
   server.close(() => {
-    // HTTP server closed
+    console.log('HTTP server closed');
   });
   
   await closeRedisConnection();
   
   if (mongoose.connection.readyState === 1) {
     await mongoose.connection.close();
-    // MongoDB connection closed
+    console.log('MongoDB connection closed');
   }
   
   process.exit(0);
