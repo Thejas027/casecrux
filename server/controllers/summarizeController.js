@@ -90,9 +90,6 @@ const getAllSummariesController = async (req, res) => {
 
 // GET /api/overall-summary - summarize all summaries using ML service and store in MultiSummary
 const getOverallSummaryController = async (req, res) => {
-  
-  .toISOString());
-  
   try {
     const summaries = await Summary.find(
       {},
@@ -101,12 +98,9 @@ const getOverallSummaryController = async (req, res) => {
 
     if (!summaries.length) {
       const message = "No summaries available.";
-      
       return res.json({ overallSummary: message });
     }
 
-    ));
-    
     const mlServiceUrl = "https://casecrux.onrender.com/summarize_overall";
     const response = await axios.post(
       mlServiceUrl,
@@ -116,9 +110,6 @@ const getOverallSummaryController = async (req, res) => {
 
     let overallSummaryData = response.data.overall_summary || response.data;
 
-    .substring(0, 300) + "...");
-    );
-    
     // Convert the complex JSON structure to markdown format
     let overallSummary;
     if (typeof overallSummaryData === 'string') {
@@ -228,11 +219,8 @@ ${overallSummaryData.legal_insights.emerging_trends ?
       cons: overallSummaryData.overall_summary?.common_cons || [],
     });
 
-     + "...");
-
     res.json({ overallSummary, multiSummaryId: multiSummaryDoc._id });
   } catch (error) {
-
     res.status(500).json({ error: "Failed to get overall summary." });
   }
 };
