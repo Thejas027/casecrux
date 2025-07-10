@@ -11,6 +11,7 @@ import CategoryBatchWithTranslationHistory from "./components/CategoryBatchWithT
 import BatchSummaryHistorySidebar from "./components/BatchSummaryHistorySidebar";
 import BatchSummaryDetail from "./components/BatchSummaryDetail";
 import AdvancedPdfSummarizer from "./components/AdvancedPdfSummarizer";
+import Chatbot from './components/Chatbot/Chatbot';
 
 function App() {
   return (
