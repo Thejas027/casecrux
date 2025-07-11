@@ -331,13 +331,55 @@ function CategoryBatchPdfSummarizer({ onSummaryUpdate, onTranslationUpdate }) {
   const prepareSummaryForTranslation = (summary) => {
     if (!summary) return "";
 
-    let text = "";
-    if (summary.pros) text += `Pros:\n${summary.pros.join("\n")}`;
-    if (summary.cons) text += `\n\nCons:\n${summary.cons.join("\n")}`;
-    if (summary.final_judgment) text += `\n\nFinal Judgment:\n${summary.final_judgment}`;
-    if (summary.raw) text += `\n${summary.raw}`;
+    console.log("=== DEBUG CategoryBatchPdfSummarizer: Summary structure ===");
+    console.log("Summary type:", typeof summary);
+    console.log("Summary content:", summary);
+    
+    // PRIORITY 1: If summary has raw field, use it as it contains the complete formatted summary
+    if (summary.raw && summary.raw.trim().length > 0) {
+      console.log("✅ Using summary.raw - contains complete formatted summary");
+      console.log("Raw content length:", summary.raw.length);
+      console.log("Raw content preview:", summary.raw.substring(0, 300));
+      return summary.raw;
+    }
 
-    return text;
+    // PRIORITY 2: If summary is a string (markdown format), return it directly
+    if (typeof summary === 'string') {
+      console.log("✅ Using string summary for translation");
+      return summary;
+    }
+
+    // PRIORITY 3: If summary is an object, extract all relevant text content
+    let text = "";
+    
+    // Add all available text fields from the summary object
+    if (summary.summary) text += summary.summary;
+    if (summary.executive_summary) text += (text ? "\n\n" : "") + summary.executive_summary;
+    if (summary.key_points) text += (text ? "\n\n" : "") + summary.key_points;
+    if (summary.legal_analysis) text += (text ? "\n\n" : "") + summary.legal_analysis;
+    if (summary.factual_background) text += (text ? "\n\n" : "") + summary.factual_background;
+    if (summary.legal_reasoning) text += (text ? "\n\n" : "") + summary.legal_reasoning;
+    if (summary.final_assessment) text += (text ? "\n\n" : "") + summary.final_assessment;
+    if (summary.additional_insights) text += (text ? "\n\n" : "") + summary.additional_insights;
+    
+    // Add pros and cons if they exist
+    if (summary.pros && Array.isArray(summary.pros) && summary.pros.length > 0) {
+      text += (text ? "\n\n" : "") + "Pros:\n" + summary.pros.join("\n");
+    }
+    if (summary.cons && Array.isArray(summary.cons) && summary.cons.length > 0) {
+      text += (text ? "\n\n" : "") + "Cons:\n" + summary.cons.join("\n");
+    }
+    
+    // Add final judgment if it exists
+    if (summary.final_judgment) {
+      text += (text ? "\n\n" : "") + "Final Judgment:\n" + summary.final_judgment;
+    }
+
+    console.log("=== DEBUG: Prepared text for translation ===");
+    console.log("Text length:", text.length);
+    console.log("Text preview:", text.substring(0, 300) + "...");
+
+    return text || String(summary); // Fallback to string conversion if no known fields
   };
 
   // Save summary to batch history

@@ -84,8 +84,9 @@ app.get("/hello", (req, res) => {
 try {
   const summarizeRoutes = require("./routes/summarizeRoutes");
   app.use("/api", summarizeRoutes);
+  console.log('✓ Loaded summarizeRoutes');
 } catch (err) {
-  // Error loading summarizeRoutes
+  console.log('✗ Error loading summarizeRoutes:', err.message);
 }
 
 try {
@@ -124,15 +125,17 @@ app.post("/test-mongo", async (req, res) => {
 try {
   const mlProxy = require("./routes/mlProxy");
   app.use("/api", mlProxy);
+  console.log('✓ Loaded mlProxy');
 } catch (err) {
-  // Error loading mlProxy
+  console.log('✗ Error loading mlProxy:', err.message);
 }
 
 try {
   const translateSummary = require("./routes/translateSummary");
   app.use("/api/translate", translateSummary);
+  console.log('✓ Loaded translateSummary');
 } catch (err) {
-  // Error loading translateSummary
+  console.log('✗ Error loading translateSummary:', err.message);
 }
 
 try {

@@ -40,74 +40,147 @@ function BatchSummaryDetail() {
   const prepareSummaryForTranslation = (summaryData) => {
     if (!summaryData || !summaryData.summary) return "";
     
+    console.log("=== DEBUG BatchSummaryDetail: Summary structure ===");
+    console.log("Summary data:", summaryData);
+    console.log("Summary content keys:", Object.keys(summaryData.summary));
+    
     const { summary: summaryContent } = summaryData;
     let textParts = [];
     
-    // Add category and creation info
+    // Add category and creation info as header
     if (summaryData.category) {
       textParts.push(`Category: ${summaryData.category}`);
     }
     
     if (summaryData.createdAt) {
       const date = new Date(summaryData.createdAt).toLocaleDateString();
-      textParts.push(`Date: ${date}`);
+      textParts.push(`Date: ${date}\n`);
     }
     
-    // Add pros section
-    if (summaryContent.pros && summaryContent.pros.length > 0) {
-      textParts.push(`\n=== PROS ===`);
-      summaryContent.pros.forEach((pro, index) => {
-        textParts.push(`${index + 1}. ${pro}`);
-      });
-    }
-    
-    // Add cons section
-    if (summaryContent.cons && summaryContent.cons.length > 0) {
-      textParts.push(`\n=== CONS ===`);
-      summaryContent.cons.forEach((con, index) => {
-        textParts.push(`${index + 1}. ${con}`);
-      });
-    }
-    
-    // Add final judgment section
-    if (summaryContent.final_judgment) {
-      textParts.push(`\n=== FINAL JUDGMENT ===`);
-      textParts.push(summaryContent.final_judgment);
-    }
-    
-    // Add additional details/raw content
-    if (summaryContent.raw) {
-      textParts.push(`\n=== ADDITIONAL DETAILS ===`);
+    // PRIORITY 1: If summary.raw exists, use it as it contains the complete formatted summary
+    if (summaryContent.raw && summaryContent.raw.trim().length > 0) {
+      console.log("✅ Using summary.raw - contains complete formatted summary");
       textParts.push(summaryContent.raw);
+      
+      // Join and return immediately since raw contains everything
+      const fullText = textParts.join('\n').trim();
+      console.log(`📋 Prepared ${fullText.length} characters for translation (from raw)`);
+      console.log(`📄 First 500 chars:`, fullText.substring(0, 500));
+      return fullText;
     }
     
-    // Add overall analysis if available
-    if (summaryContent.overall_analysis) {
-      textParts.push(`\n=== OVERALL ANALYSIS ===`);
-      textParts.push(summaryContent.overall_analysis);
+    // PRIORITY 2: If summary is a string (markdown format), use it
+    if (typeof summaryContent === 'string') {
+      console.log("✅ Using string summary");
+      textParts.push(summaryContent);
+      const fullText = textParts.join('\n').trim();
+      console.log(`📋 Prepared ${fullText.length} characters for translation (from string)`);
+      return fullText;
     }
     
-    // Add key findings if available
-    if (summaryContent.key_findings && summaryContent.key_findings.length > 0) {
-      textParts.push(`\n=== KEY FINDINGS ===`);
-      summaryContent.key_findings.forEach((finding, index) => {
-        textParts.push(`${index + 1}. ${finding}`);
-      });
-    }
-    
-    // Add recommendations if available
-    if (summaryContent.recommendations && summaryContent.recommendations.length > 0) {
-      textParts.push(`\n=== RECOMMENDATIONS ===`);
-      summaryContent.recommendations.forEach((rec, index) => {
-        textParts.push(`${index + 1}. ${rec}`);
-      });
+    // PRIORITY 3: If summary is an object, extract all available content
+    if (summaryContent && typeof summaryContent === 'object') {
+      console.log("✅ Using object summary - extracting all fields");
+      
+      // Primary summary content
+      if (summaryContent.summary) {
+        textParts.push(`=== MAIN SUMMARY ===`);
+        textParts.push(summaryContent.summary);
+      }
+      
+      // Executive summary
+      if (summaryContent.executive_summary) {
+        textParts.push(`\n=== EXECUTIVE SUMMARY ===`);
+        textParts.push(summaryContent.executive_summary);
+      }
+      
+      // Key points or legal points
+      if (summaryContent.key_points) {
+        textParts.push(`\n=== KEY POINTS ===`);
+        textParts.push(summaryContent.key_points);
+      }
+      
+      // Legal analysis
+      if (summaryContent.legal_analysis) {
+        textParts.push(`\n=== LEGAL ANALYSIS ===`);
+        textParts.push(summaryContent.legal_analysis);
+      }
+      
+      // Factual background
+      if (summaryContent.factual_background) {
+        textParts.push(`\n=== FACTUAL BACKGROUND ===`);
+        textParts.push(summaryContent.factual_background);
+      }
+      
+      // Legal reasoning
+      if (summaryContent.legal_reasoning) {
+        textParts.push(`\n=== LEGAL REASONING ===`);
+        textParts.push(summaryContent.legal_reasoning);
+      }
+      
+      // Final assessment
+      if (summaryContent.final_assessment) {
+        textParts.push(`\n=== FINAL ASSESSMENT ===`);
+        textParts.push(summaryContent.final_assessment);
+      }
+      
+      // Additional insights
+      if (summaryContent.additional_insights) {
+        textParts.push(`\n=== ADDITIONAL INSIGHTS ===`);
+        textParts.push(summaryContent.additional_insights);
+      }
+      
+      // Pros section
+      if (summaryContent.pros && summaryContent.pros.length > 0) {
+        textParts.push(`\n=== PROS ===`);
+        summaryContent.pros.forEach((pro, index) => {
+          textParts.push(`${index + 1}. ${pro}`);
+        });
+      }
+      
+      // Cons section
+      if (summaryContent.cons && summaryContent.cons.length > 0) {
+        textParts.push(`\n=== CONS ===`);
+        summaryContent.cons.forEach((con, index) => {
+          textParts.push(`${index + 1}. ${con}`);
+        });
+      }
+      
+      // Final judgment section
+      if (summaryContent.final_judgment) {
+        textParts.push(`\n=== FINAL JUDGMENT ===`);
+        textParts.push(summaryContent.final_judgment);
+      }
+      
+      // Overall analysis if available
+      if (summaryContent.overall_analysis) {
+        textParts.push(`\n=== OVERALL ANALYSIS ===`);
+        textParts.push(summaryContent.overall_analysis);
+      }
+      
+      // Key findings if available
+      if (summaryContent.key_findings && summaryContent.key_findings.length > 0) {
+        textParts.push(`\n=== KEY FINDINGS ===`);
+        summaryContent.key_findings.forEach((finding, index) => {
+          textParts.push(`${index + 1}. ${finding}`);
+        });
+      }
+      
+      // Recommendations if available
+      if (summaryContent.recommendations && summaryContent.recommendations.length > 0) {
+        textParts.push(`\n=== RECOMMENDATIONS ===`);
+        summaryContent.recommendations.forEach((rec, index) => {
+          textParts.push(`${index + 1}. ${rec}`);
+        });
+      }
     }
     
     // Join all parts with proper spacing
     const fullText = textParts.join('\n').trim();
     
-    console.log(`📋 Prepared ${fullText.length} characters for translation from batch summary`);
+    console.log(`📋 Prepared ${fullText.length} characters for translation (from object fields)`);
     console.log(`📝 Sections included: ${textParts.filter(part => part.includes('===')).length} main sections`);
+    console.log(`📄 First 500 chars:`, fullText.substring(0, 500));
     
     return fullText;
   };

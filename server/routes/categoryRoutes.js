@@ -9,9 +9,7 @@ const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "https://casecrux.onrender.
 
 // Route for category overall summary
 router.post("/category-overall-summary", async (req, res) => {
-  
-  .toISOString());
-  );
+  console.log(`[${new Date().toISOString()}] Category overall summary request:`, req.body);
 
   try {
     // Forward the request to the ML service
@@ -25,6 +23,7 @@ router.post("/category-overall-summary", async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Category overall summary error:`, error.message);
 
     res.status(error.response?.status || 500).json({
       error: error.message,
@@ -37,9 +36,7 @@ router.post("/category-overall-summary", async (req, res) => {
 
 // Route for listing PDFs in category
 router.post("/list-pdfs-in-category", async (req, res) => {
-  
-  .toISOString());
-  );
+  console.log(`[${new Date().toISOString()}] List PDFs in category request:`, req.body);
 
   try {
     // Forward the request to the ML service
@@ -53,6 +50,7 @@ router.post("/list-pdfs-in-category", async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] List PDFs in category error:`, error.message);
 
     res.status(error.response?.status || 500).json({
       error: error.message,
@@ -65,9 +63,7 @@ router.post("/list-pdfs-in-category", async (req, res) => {
 
 // Route for category download summary
 router.post("/category-download-summary", async (req, res) => {
-  
-  .toISOString());
-  );
+  console.log(`[${new Date().toISOString()}] Category download summary request:`, req.body);
 
   try {
     // Forward the request to the ML service
@@ -81,6 +77,7 @@ router.post("/category-download-summary", async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Category download summary error:`, error.message);
 
     res.status(error.response?.status || 500).json({
       error: error.message,
