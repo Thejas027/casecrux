@@ -12,7 +12,11 @@ const {
 
 // Set your Render ML service URL in .env as ML_SERVICE_URL
 const ML_SERVICE_URL =
-  process.env.ML_SERVICE_URL || "https://your-ml-service.onrender.com";
+  process.env.ML_SERVICE_URL || "http://localhost:8000";
+
+console.log("🚀 ML_SERVICE_URL being used:", ML_SERVICE_URL);
+console.log("🛠️  Environment:", process.env.NODE_ENV || 'development');
+  2
 
 // Helper function for ML service health check
 const checkMLServiceHealth = async () => {

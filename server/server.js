@@ -4,42 +4,52 @@ const cors = require("cors");
 require("dotenv").config();
 
 // Initialize Redis for caching
-const { initializeRedis, closeRedisConnection, checkRedisHealth } = require("./utils/redisConfig");
+const {
+  initializeRedis,
+  closeRedisConnection,
+  checkRedisHealth,
+} = require("./utils/redisConfig");
 
 const app = express();
 
 // CORS configuration for production
-app.use(cors({
-  origin: [
-    'https://casecrux.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000'
-  ],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "https://casecrux.vercel.app",
+      "http://localhost:5173",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  })
+);
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+const chatRoutes = require("./routes/chatRoutes");
+app.use("/chat", chatRoutes);
 
 // Health check route
 app.get("/", (req, res) => {
-  res.json({ 
-    status: "OK", 
+  res.json({
+    status: "OK",
     message: "CaseCrux Backend API Running",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || "development",
   });
 });
 
 // API health check
 app.get("/api/health", async (req, res) => {
   const redisHealth = await checkRedisHealth();
-  
-  res.json({ 
+
+  res.json({
     status: "healthy",
-    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    database:
+      mongoose.connection.readyState === 1 ? "connected" : "disconnected",
     redis: redisHealth,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -54,22 +64,24 @@ if (process.env.MONGO_URI) {
   mongoose
     .connect(process.env.MONGO_URI)
     .then(() => {
-      console.log('MongoDB connected successfully');
+      console.log("MongoDB connected successfully");
     })
     .catch((err) => {
-      console.log('MongoDB connection error:', err.message);
+      console.log("MongoDB connection error:", err.message);
     });
 } else {
-  console.log('MONGO_URI not found in environment variables');
+  console.log("MONGO_URI not found in environment variables");
 }
 
 // Initialize Redis cache
 initializeRedis()
   .then(() => {
-    console.log('Redis cache initialization completed');
+    console.log("Redis cache initialization completed");
   })
   .catch((err) => {
-    console.log('Redis initialization failed - Application will continue without caching');
+    console.log(
+      "Redis initialization failed - Application will continue without caching"
+    );
   });
 
 // Hello route
@@ -81,9 +93,9 @@ app.get("/hello", (req, res) => {
 try {
   const summarizeRoutes = require("./routes/summarizeRoutes");
   app.use("/api", summarizeRoutes);
-  console.log('✓ Loaded summarizeRoutes');
+  console.log("✓ Loaded summarizeRoutes");
 } catch (err) {
-  console.log('✗ Error loading summarizeRoutes:', err.message);
+  console.log("✗ Error loading summarizeRoutes:", err.message);
 }
 
 try {
@@ -122,17 +134,17 @@ app.post("/test-mongo", async (req, res) => {
 try {
   const mlProxy = require("./routes/mlProxy");
   app.use("/api", mlProxy);
-  console.log('✓ Loaded mlProxy');
+  console.log("✓ Loaded mlProxy");
 } catch (err) {
-  console.log('✗ Error loading mlProxy:', err.message);
+  console.log("✗ Error loading mlProxy:", err.message);
 }
 
 try {
   const translateSummary = require("./routes/translateSummary");
   app.use("/api/translate", translateSummary);
-  console.log('✓ Loaded translateSummary');
+  console.log("✓ Loaded translateSummary");
 } catch (err) {
-  console.log('✗ Error loading translateSummary:', err.message);
+  console.log("✗ Error loading translateSummary:", err.message);
 }
 
 try {
@@ -160,17 +172,20 @@ try {
 // Global error handler
 app.use((err, req, res, next) => {
   res.status(500).json({
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    error: "Internal server error",
+    message:
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : "Something went wrong",
   });
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use("*", (req, res) => {
   res.status(404).json({
-    error: 'Route not found',
+    error: "Route not found",
     path: req.originalUrl,
-    method: req.method
+    method: req.method,
   });
 });
 
@@ -180,34 +195,34 @@ const server = app.listen(PORT, () => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully');
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received, shutting down gracefully");
   server.close(() => {
-    console.log('HTTP server closed');
+    console.log("HTTP server closed");
   });
-  
+
   await closeRedisConnection();
-  
+
   if (mongoose.connection.readyState === 1) {
     await mongoose.connection.close();
-    console.log('MongoDB connection closed');
+    console.log("MongoDB connection closed");
   }
-  
+
   process.exit(0);
 });
 
-process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully');
+process.on("SIGINT", async () => {
+  console.log("SIGINT received, shutting down gracefully");
   server.close(() => {
-    console.log('HTTP server closed');
+    console.log("HTTP server closed");
   });
-  
+
   await closeRedisConnection();
-  
+
   if (mongoose.connection.readyState === 1) {
     await mongoose.connection.close();
-    console.log('MongoDB connection closed');
+    console.log("MongoDB connection closed");
   }
-  
+
   process.exit(0);
 });
