@@ -1,71 +1,46 @@
-const openai = require("../utils/openaiClient");
+const axios = require("axios");
+require("dotenv").config();
 
-const chatHistory = new Map();
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-async function handleChat(req, res) {
-  const { sessionId, message, stream } = req.body;
-  if (!sessionId || !message) {
-    return res.status(400).json({ error: "sessionId and message are required" });
-  }
-
-
-  const history = chatHistory.get(sessionId) || [];
-  history.push({ role: "user", content: message });
-
-  const cleanedHistory = history.map(m => ({
-    role: m.role,
-    content: m.content
-  }));
-
+exports.sendMessage = async (req, res) => {
   try {
-    if (stream) {
-      res.setHeader("Content-Type", "text/event-stream");
-      console.log("Sending history:", cleanedHistory);
-      const completion = await openai.chat.completions.create(
-        {
-          model: "gpt-4o",
-          messages: [{ role: "system", content: "You are helpful." }, ...cleanedHistory],
-          stream: true
+    const { message, sessionId } = req.body;
+
+    // Maintain chat history per session (in-memory for demo)
+    if (!global.chatHistory) global.chatHistory = {};
+    if (!global.chatHistory[sessionId]) global.chatHistory[sessionId] = [];
+    global.chatHistory[sessionId].push({ role: "user", content: message });
+
+    // Prepare messages for Groq API
+    const groqMessages = global.chatHistory[sessionId].map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    }));
+
+    // Call Groq API
+    const groqResponse = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        model: "llama3-70b-8192", // or 'llama3-8b-8192'
+        messages: groqMessages,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json",
         },
-        { responseType: "stream" }
-      );
+      }
+    );
 
-      completion.data.on("data", chunk => {
-        const payloads = chunk.toString().split("\n\n");
-        for (const p of payloads) {
-          if (p.includes("[DONE]")) {
-            res.write("data: [DONE]\n\n");
-            res.end();
-            return;
-          }
-          if (p.startsWith("data: ")) {
-            const data = JSON.parse(p.replace("data: ", ""));
-            const delta = data.choices[0].delta?.content;
-            if (delta) res.write(`data: ${delta}\n\n`);
-          }
-        }
-      });
-      completion.data.on("end", () => res.end());
-      completion.data.on("error", err => {
-        console.error("Stream error:", err);
-        res.end();
-      });
-    } else {
-      const resp = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "system", content: "You are helpful." }, ...history]
-      });
+    const reply = groqResponse.data.choices[0].message.content;
 
-      const reply = resp.choices[0]?.message?.content || "";
-      history.push({ role: "assistant", content: reply });
-      chatHistory.set(sessionId, history);
-      res.json({ reply });
-    }
-  } catch (err) {
-  console.error("❌ OpenAI failed:", err.message);
-  if (err.response) console.error("Status:", err.response.status, err.response.data);
-  return res.status(500).json({ error: "OpenAI request failed" });
-}
-}
+    // Save assistant reply to history
+    global.chatHistory[sessionId].push({ role: "assistant", content: reply });
 
-module.exports = { handleChat };
+    res.json({ reply });
+  } catch (error) {
+    console.error("Groq error:", error?.response?.data || error.message);
+    res.status(500).json({ error: "Chatbot failed to respond." });
+  }
+};
